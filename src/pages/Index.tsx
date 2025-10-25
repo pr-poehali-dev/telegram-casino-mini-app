@@ -159,7 +159,7 @@ const Index = () => {
         rarity: newItem.rarity,
       };
       setInventory([...inventory, upgradeItem]);
-    }, 8000);
+    }, 7000);
   };
 
   const performUpgrade = () => {
