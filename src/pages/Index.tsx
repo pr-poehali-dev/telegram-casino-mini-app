@@ -507,10 +507,9 @@ const Index = () => {
           {isOpening ? (
             <div className="py-6">
               <h3 className="text-xl font-bold mb-4 text-center">Открываем кейс...</h3>
-              <div className="relative h-32 overflow-hidden rounded-lg bg-black/80">
-                <div className="fog-overlay"></div>
+              <div className="relative h-32 overflow-hidden rounded-lg bg-secondary/50">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-1 h-full bg-primary z-10 shadow-lg shadow-primary/50"></div>
+                  <div className="w-1 h-full bg-primary z-10"></div>
                 </div>
                 <div className="flex gap-2 py-4 animate-roulette">
                   {rouletteItems.map((item, idx) => (
