@@ -7,8 +7,12 @@ import BoxesTab from '@/components/casino/BoxesTab';
 import MinerTab from '@/components/casino/MinerTab';
 import UpgradeTab from '@/components/casino/UpgradeTab';
 import InventoryTab from '@/components/casino/InventoryTab';
+import ProfileTab from '@/components/casino/ProfileTab';
+import AdminTab from '@/components/casino/AdminTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
 import BoxOpenDialog from '@/components/casino/BoxOpenDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { UpgradeItem, BoxType, boxes } from '@/components/casino/types';
 
 const Index = () => {
@@ -23,6 +27,10 @@ const Index = () => {
   const [selectedBox, setSelectedBox] = useState<BoxType | null>(null);
   const [wonItem, setWonItem] = useState<UpgradeItem | null>(null);
   const [isBoxDialogOpen, setIsBoxDialogOpen] = useState(false);
+  const [showAdminPrompt, setShowAdminPrompt] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const ADMIN_PASSWORD = 'admin2025';
 
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
@@ -157,6 +165,19 @@ const Index = () => {
     setBalance(1000);
     setInventory([]);
     setLastFreeOpen(null);
+    setIsAdmin(false);
+    setActiveTab('boxes');
+  };
+
+  const checkAdminPassword = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setActiveTab('admin');
+      setShowAdminPrompt(false);
+      setAdminPassword('');
+    } else {
+      alert('❌ Неверный пароль!');
+    }
   };
 
   if (!isAuthenticated) {
@@ -176,14 +197,17 @@ const Index = () => {
               <Icon name="Coins" className="text-primary" size={20} />
               <span className="font-semibold text-primary">{balance}</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={logout}
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Icon name="LogOut" size={20} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setShowAdminPrompt(true)}
+                className="text-muted-foreground hover:text-red-500"
+                title="Админ панель"
+              >
+                <Icon name="ShieldAlert" size={20} />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -219,6 +243,20 @@ const Index = () => {
               setInventory={setInventory}
             />
           </TabsContent>
+
+          <ProfileTab
+            user={user}
+            balance={balance}
+            inventory={inventory}
+            onLogout={logout}
+          />
+
+          {isAdmin && (
+            <AdminTab onClose={() => {
+              setIsAdmin(false);
+              setActiveTab('boxes');
+            }} />
+          )}
         </Tabs>
       </div>
 
@@ -230,6 +268,32 @@ const Index = () => {
         wonItem={wonItem}
         onClose={() => setIsBoxDialogOpen(false)}
       />
+
+      <Dialog open={showAdminPrompt} onOpenChange={setShowAdminPrompt}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="ShieldAlert" className="text-red-500" size={24} />
+              Админ панель
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-semibold mb-2 block">Пароль</label>
+              <Input
+                type="password"
+                placeholder="Введи пароль администратора"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && checkAdminPassword()}
+              />
+            </div>
+            <Button onClick={checkAdminPassword} className="w-full bg-red-600 hover:bg-red-700">
+              Войти
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

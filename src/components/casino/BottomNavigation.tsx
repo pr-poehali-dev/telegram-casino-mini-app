@@ -43,6 +43,14 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
             <Icon name="Backpack" size={20} />
             <span className="text-xs">Инвентарь</span>
           </Button>
+          <Button
+            variant="ghost"
+            className={`flex-col h-auto gap-1 ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            <Icon name="User" size={20} />
+            <span className="text-xs">Профиль</span>
+          </Button>
         </div>
       </div>
     </div>

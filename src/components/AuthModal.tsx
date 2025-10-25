@@ -42,6 +42,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
         }
 
         const userData = {
+          id: users[email].id,
           email,
           balance: users[email].balance || 1000,
           inventory: users[email].inventory || [],
@@ -56,7 +57,10 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
           return;
         }
 
+        const userId = 'USR-' + Date.now().toString(36).toUpperCase();
+        
         const newUser = {
+          id: userId,
           password,
           balance: 1000,
           inventory: [],
@@ -66,6 +70,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
         localStorage.setItem('users', JSON.stringify(users));
         
         const userData = {
+          id: userId,
           email,
           balance: 1000,
           inventory: [],
