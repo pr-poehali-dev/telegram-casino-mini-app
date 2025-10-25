@@ -31,10 +31,21 @@ const Index = () => {
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+  const [telegramUserId, setTelegramUserId] = useState<number | null>(null);
   const ADMIN_PASSWORD = 'admin2025';
   const CHANNEL_URL = 'https://t.me/tgDuckCasino';
+  const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f';
 
   useEffect(() => {
+    // Get Telegram user ID if available
+    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+      const tg = (window as any).Telegram.WebApp;
+      if (tg.initDataUnsafe?.user?.id) {
+        setTelegramUserId(tg.initDataUnsafe.user.id);
+      }
+    }
+    
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
@@ -366,15 +377,45 @@ const Index = () => {
             </Button>
 
             <Button
-              onClick={() => {
-                localStorage.setItem('subscribed_to_channel', 'true');
-                setShowSubscribeDialog(false);
-                alert('✅ Спасибо за подписку! Теперь можешь открыть бокс');
+              onClick={async () => {
+                if (!telegramUserId) {
+                  // Fallback for non-Telegram users
+                  localStorage.setItem('subscribed_to_channel', 'true');
+                  setShowSubscribeDialog(false);
+                  alert('✅ Спасибо за подписку!');
+                  return;
+                }
+                
+                setIsCheckingSubscription(true);
+                try {
+                  const response = await fetch(`${CHECK_SUBSCRIPTION_URL}?user_id=${telegramUserId}`);
+                  const data = await response.json();
+                  
+                  if (data.subscribed) {
+                    localStorage.setItem('subscribed_to_channel', 'true');
+                    setShowSubscribeDialog(false);
+                    alert('✅ Подписка подтверждена! Теперь можешь открыть бокс');
+                  } else {
+                    alert('❌ Подписка не найдена. Подпишись на канал и попробуй снова');
+                  }
+                } catch (error) {
+                  alert('❌ Ошибка проверки. Попробуй позже');
+                } finally {
+                  setIsCheckingSubscription(false);
+                }
               }}
               variant="outline"
               className="w-full"
+              disabled={isCheckingSubscription}
             >
-              Я подписался!
+              {isCheckingSubscription ? (
+                <>
+                  <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
+                  Проверяю...
+                </>
+              ) : (
+                'Я подписался!'
+              )}
             </Button>
           </div>
         </DialogContent>
