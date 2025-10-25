@@ -84,11 +84,9 @@ const MinerTab = ({ balance, setBalance }: MinerTabProps) => {
     setGrid(newGrid);
 
     if (cell.type === 'mine') {
-      setGameOver(true);
-      const loss = Math.floor(parseInt(bet) * 0.5);
-      setTimeout(() => {
-        alert(`💥 Мина! Потеряно ${loss}⭐`);
-      }, 300);
+      const newMultiplier = currentMultiplier * 0.5;
+      setCurrentMultiplier(newMultiplier);
+      setRevealedCount(revealedCount + 1);
     } else if (cell.type === 'plus') {
       const newMultiplier = currentMultiplier * (cell.multiplier || 1.5);
       setCurrentMultiplier(newMultiplier);
