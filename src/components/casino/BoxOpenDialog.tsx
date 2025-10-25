@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { BoxType, UpgradeItem } from './types';
+import Confetti from 'react-confetti';
 
 interface BoxOpenDialogProps {
   isOpen: boolean;
@@ -12,12 +13,18 @@ interface BoxOpenDialogProps {
 
 const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showFireworks, setShowFireworks] = useState(false);
 
   useEffect(() => {
     if (isOpen && wonItem) {
       setIsAnimating(true);
       const timer = setTimeout(() => {
         setIsAnimating(false);
+        setShowFireworks(true);
+        
+        setTimeout(() => {
+          setShowFireworks(false);
+        }, 5000);
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -27,7 +34,19 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm relative overflow-hidden">
+        {showFireworks && (
+          <div className="absolute inset-0 pointer-events-none z-50">
+            <Confetti
+              width={400}
+              height={600}
+              recycle={true}
+              numberOfPieces={200}
+              gravity={0.3}
+            />
+          </div>
+        )}
+        
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
             {box.emoji} {box.name}
@@ -41,7 +60,7 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
               <p className="text-lg text-muted-foreground animate-pulse">Открываем...</p>
             </div>
           ) : wonItem ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 relative z-10">
               <div className="text-7xl animate-pulse">{wonItem.name.includes('⬆️') ? '⬆️' : '🎁'}</div>
               <div className="text-center space-y-2">
                 <p className="text-2xl font-bold gold-text-glow">{wonItem.name}</p>
@@ -55,7 +74,7 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
         </div>
 
         {!isAnimating && (
-          <Button onClick={onClose} className="w-full" size="lg">
+          <Button onClick={onClose} className="w-full relative z-10" size="lg">
             Отлично!
           </Button>
         )}
