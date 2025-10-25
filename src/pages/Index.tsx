@@ -3,27 +3,35 @@ import Icon from '@/components/ui/icon';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import AuthModal from '@/components/AuthModal';
+import BoxesTab from '@/components/casino/BoxesTab';
 import UpgradeTab from '@/components/casino/UpgradeTab';
 import InventoryTab from '@/components/casino/InventoryTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
-import { UpgradeItem } from '@/components/casino/types';
+import BoxOpenDialog from '@/components/casino/BoxOpenDialog';
+import { UpgradeItem, BoxType, boxes } from '@/components/casino/types';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('upgrade');
+  const [activeTab, setActiveTab] = useState('boxes');
   const [balance, setBalance] = useState(1000);
   const [inventory, setInventory] = useState<UpgradeItem[]>([]);
   const [upgradeFrom, setUpgradeFrom] = useState<UpgradeItem | null>(null);
   const [upgradeChance] = useState(50);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [lastFreeOpen, setLastFreeOpen] = useState<number | null>(null);
+  const [timeUntilFree, setTimeUntilFree] = useState<string>('');
+  const [selectedBox, setSelectedBox] = useState<BoxType | null>(null);
+  const [wonItem, setWonItem] = useState<UpgradeItem | null>(null);
+  const [isBoxDialogOpen, setIsBoxDialogOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       setUser(userData);
-      setBalance(userData.balance);
+      setBalance(userData.balance || 1000);
       setInventory(userData.inventory || []);
+      setLastFreeOpen(userData.lastFreeOpen || null);
       setIsAuthenticated(true);
     }
   }, []);
@@ -35,6 +43,7 @@ const Index = () => {
         ...users[user.email],
         balance,
         inventory,
+        lastFreeOpen,
       };
       localStorage.setItem('users', JSON.stringify(users));
       
@@ -42,16 +51,74 @@ const Index = () => {
         ...user,
         balance,
         inventory,
+        lastFreeOpen,
       };
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
-  }, [balance, inventory, user]);
+  }, [balance, inventory, lastFreeOpen, user]);
+
+  useEffect(() => {
+    if (!lastFreeOpen) return;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const timePassed = now - lastFreeOpen;
+      const timeLeft = 24 * 60 * 60 * 1000 - timePassed;
+      
+      if (timeLeft <= 0) {
+        setTimeUntilFree('Доступен!');
+      } else {
+        const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+        setTimeUntilFree(`${hours}ч ${minutes}м`);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [lastFreeOpen]);
 
   const handleAuthSuccess = (data: any) => {
     setUser(data.user);
-    setBalance(data.user.balance);
+    setBalance(data.user.balance || 1000);
     setInventory(data.user.inventory || []);
+    setLastFreeOpen(data.user.lastFreeOpen || null);
     setIsAuthenticated(true);
+  };
+
+  const openBox = (box: BoxType) => {
+    if (box.isFree) {
+      const canOpen = !lastFreeOpen || (Date.now() - lastFreeOpen) >= 24 * 60 * 60 * 1000;
+      if (!canOpen) {
+        alert('⏰ Бесплатный бокс будет доступен через: ' + timeUntilFree);
+        return;
+      }
+      setLastFreeOpen(Date.now());
+    } else {
+      if (balance < box.price) {
+        alert('❌ Недостаточно звёзд!');
+        return;
+      }
+      setBalance(balance - box.price);
+    }
+
+    const prize = Math.floor(Math.random() * (box.maxPrize - box.minPrize + 1)) + box.minPrize;
+    
+    const rarities: Array<'common' | 'rare' | 'epic' | 'legendary'> = ['common', 'rare', 'epic', 'legendary'];
+    const rarity = prize > box.maxPrize * 0.8 ? 'legendary' : 
+                   prize > box.maxPrize * 0.6 ? 'epic' : 
+                   prize > box.maxPrize * 0.4 ? 'rare' : 'common';
+    
+    const newItem: UpgradeItem = {
+      id: Date.now(),
+      name: `Приз из ${box.name}`,
+      value: prize,
+      rarity: rarity,
+    };
+    
+    setInventory([...inventory, newItem]);
+    setSelectedBox(box);
+    setWonItem(newItem);
+    setIsBoxDialogOpen(true);
   };
 
   const performUpgrade = () => {
@@ -91,6 +158,7 @@ const Index = () => {
     setUser(null);
     setBalance(1000);
     setInventory([]);
+    setLastFreeOpen(null);
   };
 
   if (!isAuthenticated) {
@@ -122,6 +190,15 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsContent value="boxes" className="space-y-4 mt-0">
+            <BoxesTab 
+              balance={balance}
+              onOpenBox={openBox}
+              lastFreeOpen={lastFreeOpen}
+              timeUntilFree={timeUntilFree}
+            />
+          </TabsContent>
+
           <TabsContent value="upgrade" className="space-y-4 mt-0">
             <UpgradeTab 
               upgradeFrom={upgradeFrom}
@@ -142,6 +219,13 @@ const Index = () => {
       </div>
 
       <BottomNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      <BoxOpenDialog 
+        isOpen={isBoxDialogOpen}
+        box={selectedBox}
+        wonItem={wonItem}
+        onClose={() => setIsBoxDialogOpen(false)}
+      />
     </div>
   );
 };

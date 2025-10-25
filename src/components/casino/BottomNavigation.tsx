@@ -13,6 +13,14 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
         <div className="flex items-center justify-around py-3">
           <Button
             variant="ghost"
+            className={`flex-col h-auto gap-1 ${activeTab === 'boxes' ? 'text-primary' : 'text-muted-foreground'}`}
+            onClick={() => setActiveTab('boxes')}
+          >
+            <Icon name="Package" size={20} />
+            <span className="text-xs">Боксы</span>
+          </Button>
+          <Button
+            variant="ghost"
             className={`flex-col h-auto gap-1 ${activeTab === 'upgrade' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('upgrade')}
           >
