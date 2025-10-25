@@ -21,6 +21,14 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           </Button>
           <Button
             variant="ghost"
+            className={`flex-col h-auto gap-1 ${activeTab === 'miner' ? 'text-primary' : 'text-muted-foreground'}`}
+            onClick={() => setActiveTab('miner')}
+          >
+            <span className="text-xl">💣</span>
+            <span className="text-xs">Минёр</span>
+          </Button>
+          <Button
+            variant="ghost"
             className={`flex-col h-auto gap-1 ${activeTab === 'upgrade' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('upgrade')}
           >

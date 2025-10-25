@@ -4,6 +4,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import AuthModal from '@/components/AuthModal';
 import BoxesTab from '@/components/casino/BoxesTab';
+import MinerTab from '@/components/casino/MinerTab';
 import UpgradeTab from '@/components/casino/UpgradeTab';
 import InventoryTab from '@/components/casino/InventoryTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
@@ -195,6 +196,11 @@ const Index = () => {
               timeUntilFree={timeUntilFree}
             />
           </TabsContent>
+
+          <MinerTab 
+            balance={balance}
+            setBalance={setBalance}
+          />
 
           <TabsContent value="upgrade" className="space-y-4 mt-0">
             <UpgradeTab 
