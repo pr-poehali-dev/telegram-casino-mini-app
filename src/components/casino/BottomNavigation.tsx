@@ -10,45 +10,53 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-primary/20 backdrop-blur-lg">
       <div className="container mx-auto max-w-md">
-        <div className="flex items-center justify-around py-3">
+        <div className="grid grid-cols-6 gap-1 py-2 px-2">
           <Button
             variant="ghost"
-            className={`flex-col h-auto gap-1 ${activeTab === 'boxes' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'boxes' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('boxes')}
           >
-            <Icon name="Package" size={20} />
+            <Icon name="Package" size={18} />
             <span className="text-xs">Боксы</span>
           </Button>
           <Button
             variant="ghost"
-            className={`flex-col h-auto gap-1 ${activeTab === 'miner' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'miner' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('miner')}
           >
-            <span className="text-xl">💣</span>
+            <span className="text-lg">💣</span>
             <span className="text-xs">Минёр</span>
           </Button>
           <Button
             variant="ghost"
-            className={`flex-col h-auto gap-1 ${activeTab === 'upgrade' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'upgrade' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('upgrade')}
           >
-            <Icon name="ArrowUpCircle" size={20} />
-            <span className="text-xs">Апгрейд</span>
+            <Icon name="ArrowUpCircle" size={18} />
+            <span className="text-xs">Улучш.</span>
           </Button>
           <Button
             variant="ghost"
-            className={`flex-col h-auto gap-1 ${activeTab === 'inventory' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'wallet' ? 'text-primary' : 'text-muted-foreground'}`}
+            onClick={() => setActiveTab('wallet')}
+          >
+            <Icon name="Wallet" size={18} />
+            <span className="text-xs">Кошелёк</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'inventory' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('inventory')}
           >
-            <Icon name="Backpack" size={20} />
-            <span className="text-xs">Инвентарь</span>
+            <Icon name="Backpack" size={18} />
+            <span className="text-xs">Инвент.</span>
           </Button>
           <Button
             variant="ghost"
-            className={`flex-col h-auto gap-1 ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
+            className={`flex-col h-auto gap-1 py-2 ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={() => setActiveTab('profile')}
           >
-            <Icon name="User" size={20} />
+            <Icon name="User" size={18} />
             <span className="text-xs">Профиль</span>
           </Button>
         </div>

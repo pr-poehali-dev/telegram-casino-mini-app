@@ -8,6 +8,7 @@ import MinerTab from '@/components/casino/MinerTab';
 import UpgradeTab from '@/components/casino/UpgradeTab';
 import InventoryTab from '@/components/casino/InventoryTab';
 import ProfileTab from '@/components/casino/ProfileTab';
+import WalletTab from '@/components/casino/WalletTab';
 import AdminTab from '@/components/casino/AdminTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
 import BoxOpenDialog from '@/components/casino/BoxOpenDialog';
@@ -297,6 +298,11 @@ const Index = () => {
               setInventory={setInventory}
             />
           </TabsContent>
+
+          <WalletTab
+            balance={balance}
+            setBalance={setBalance}
+          />
 
           <ProfileTab
             user={user}
