@@ -11,6 +11,7 @@ import ProfileTab from '@/components/casino/ProfileTab';
 import AdminTab from '@/components/casino/AdminTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
 import BoxOpenDialog from '@/components/casino/BoxOpenDialog';
+import SnowEffect from '@/components/casino/SnowEffect';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { UpgradeItem, BoxType, boxes } from '@/components/casino/types';
@@ -208,7 +209,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 relative">
+      <SnowEffect />
       <div className="container mx-auto px-4 py-6 max-w-md">
         <div className="space-y-3 mb-6">
           <div className="flex items-center justify-between">
