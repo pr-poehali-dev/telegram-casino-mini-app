@@ -14,12 +14,9 @@ const API_URL = 'https://functions.poehali.dev/bdc6396e-6e37-490c-8498-1a249b75d
 const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-  const [needsVerification, setNeedsVerification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handleRegister = async () => {
     if (!email || !password) {
@@ -29,7 +26,6 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
 
     setIsLoading(true);
     setError('');
-    setSuccessMessage('');
 
     try {
       const response = await fetch(API_URL, {
@@ -46,43 +42,6 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
 
       if (!response.ok) {
         setError(data.error || 'Ошибка регистрации');
-        setIsLoading(false);
-        return;
-      }
-
-      setNeedsVerification(true);
-      setSuccessMessage('📧 Код отправлен на email! Проверь почту.');
-    } catch (err) {
-      setError('Ошибка соединения с сервером');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerify = async () => {
-    if (!verificationCode) {
-      setError('Введите код подтверждения');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'verify',
-          email,
-          code: verificationCode
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Неверный код');
         setIsLoading(false);
         return;
       }
@@ -118,12 +77,6 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
 
       const data = await response.json();
 
-      if (response.status === 403 && data.needsVerification) {
-        setError('Email не подтверждён! Запросите новый код.');
-        setIsLoading(false);
-        return;
-      }
-
       if (!response.ok) {
         setError(data.error || 'Ошибка входа');
         setIsLoading(false);
@@ -140,9 +93,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
   };
 
   const handleSubmit = () => {
-    if (needsVerification) {
-      handleVerify();
-    } else if (isLogin) {
+    if (isLogin) {
       handleLogin();
     } else {
       handleRegister();
@@ -157,11 +108,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
             🦆 DuckCasino
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            {needsVerification 
-              ? 'Подтвердите email' 
-              : isLogin 
-                ? 'Войдите в аккаунт' 
-                : 'Создайте новый аккаунт'}
+            {isLogin ? 'Войдите в аккаунт' : 'Создайте новый аккаунт'}
           </DialogDescription>
         </DialogHeader>
 
@@ -179,59 +126,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                 </div>
               )}
 
-              {successMessage && (
-                <div className="bg-green-500/20 border border-green-500/50 p-3 rounded-lg">
-                  <p className="text-sm text-green-400">{successMessage}</p>
-                </div>
-              )}
-
-              {needsVerification ? (
-                <div className="space-y-3">
-                  <div className="bg-primary/10 p-4 rounded-lg text-center">
-                    <Icon name="Mail" className="mx-auto text-primary mb-2" size={32} />
-                    <p className="text-sm text-muted-foreground mb-1">Код отправлен на:</p>
-                    <p className="font-semibold">{email}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold mb-2 block">
-                      Код из письма <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="123456"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="bg-secondary border-primary/30 text-center text-2xl font-bold tracking-widest"
-                      maxLength={6}
-                      disabled={isLoading}
-                      autoFocus
-                    />
-                  </div>
-
-                  <Button
-                    onClick={handleVerify}
-                    disabled={isLoading || verificationCode.length !== 6}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                  >
-                    <Icon name="CheckCircle" className="mr-2" size={16} />
-                    Подтвердить
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      setNeedsVerification(false);
-                      setVerificationCode('');
-                      setError('');
-                      setSuccessMessage('');
-                    }}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    Назад
-                  </Button>
-                </div>
-              ) : (
+              {
                 <>
                   <div className="space-y-3">
                     <div>
@@ -276,7 +171,6 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                     onClick={() => {
                       setIsLogin(!isLogin);
                       setError('');
-                      setSuccessMessage('');
                     }}
                     variant="ghost"
                     className="w-full"
@@ -284,7 +178,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                     {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
                   </Button>
                 </>
-              )}
+              
             </>
           )}
         </div>

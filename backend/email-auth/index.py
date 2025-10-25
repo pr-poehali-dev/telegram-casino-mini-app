@@ -114,104 +114,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            code = generate_code()
             password_hash = hash_password(password)
-            expires_at = datetime.now() + timedelta(minutes=10)
             
             cur.execute('''
                 INSERT INTO t_p79007879_telegram_casino_mini.users 
-                (telegram_id, email, password_hash, verification_code, verification_code_expires_at, balance)
-                VALUES (0, %s, %s, %s, %s, 1000)
+                (telegram_id, email, password_hash, is_email_verified, balance)
+                VALUES (0, %s, %s, TRUE, 1000)
                 RETURNING id
-            ''', (email, password_hash, code, expires_at))
+            ''', (email, password_hash))
             
             user_id = cur.fetchone()[0]
-            conn.commit()
-            
-            email_sent = send_verification_email(email, code)
-            
-            cur.close()
-            conn.close()
-            
-            return {
-                'statusCode': 200,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({
-                    'success': True,
-                    'message': 'Код отправлен на email',
-                    'emailSent': email_sent,
-                    'userId': user_id
-                }),
-                'isBase64Encoded': False
-            }
-        
-        elif action == 'verify':
-            email = body.get('email')
-            code = body.get('code')
-            
-            if not email or not code:
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Email и код обязательны'}),
-                    'isBase64Encoded': False
-                }
-            
-            cur.execute('''
-                SELECT id, verification_code, verification_code_expires_at, is_email_verified, balance
-                FROM t_p79007879_telegram_casino_mini.users 
-                WHERE email = %s
-            ''', (email,))
-            
-            user = cur.fetchone()
-            
-            if not user:
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 404,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Пользователь не найден'}),
-                    'isBase64Encoded': False
-                }
-            
-            user_id, stored_code, expires_at, is_verified, balance = user
-            
-            if is_verified:
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Email уже подтверждён'}),
-                    'isBase64Encoded': False
-                }
-            
-            if datetime.now() > expires_at:
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Код истёк, запросите новый'}),
-                    'isBase64Encoded': False
-                }
-            
-            if code != stored_code:
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Неверный код'}),
-                    'isBase64Encoded': False
-                }
-            
-            cur.execute('''
-                UPDATE t_p79007879_telegram_casino_mini.users 
-                SET is_email_verified = TRUE, verification_code = NULL
-                WHERE id = %s
-            ''', (user_id,))
             conn.commit()
             
             cur.close()
@@ -225,7 +137,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'user': {
                         'id': f'#{user_id}',
                         'email': email,
-                        'balance': balance
+                        'balance': 1000
                     }
                 }),
                 'isBase64Encoded': False
@@ -264,16 +176,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             user_id, is_verified, balance = user
-            
-            if not is_verified:
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 403,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Email не подтверждён', 'needsVerification': True}),
-                    'isBase64Encoded': False
-                }
             
             cur.execute('''
                 UPDATE t_p79007879_telegram_casino_mini.users 

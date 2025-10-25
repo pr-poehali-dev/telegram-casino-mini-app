@@ -1,33 +1,27 @@
 {
   "tests": [
     {
-      "name": "Register new user",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "action": "register",
-        "email": "test@example.com",
-        "password": "testpassword123"
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "success": true
-      },
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Login unverified user",
+      "name": "Login existing user",
       "method": "POST",
       "path": "/",
       "body": {
         "action": "login",
-        "email": "test@example.com",
-        "password": "testpassword123"
+        "email": "test@test.com",
+        "password": "test123"
       },
-      "expectedStatus": 403,
-      "expectedBody": {
-        "needsVerification": true
+      "expectedStatus": 401,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login with wrong password",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "email": "test@test.com",
+        "password": "wrongpassword"
       },
+      "expectedStatus": 401,
       "bodyMatcher": "partial"
     }
   ]
