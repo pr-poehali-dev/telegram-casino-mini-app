@@ -178,7 +178,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                     {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
                   </Button>
                 </>
-              
+              )}
             </>
           )}
         </div>
