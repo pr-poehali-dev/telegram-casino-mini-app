@@ -48,7 +48,7 @@ const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => 
                 <Icon name="Copy" size={16} />
               </Button>
             </div>
-            <p className="font-mono font-bold text-primary">{user.id}</p>
+            <p className="font-mono font-bold text-primary text-2xl">{user.id}</p>
           </div>
 
           <div className="bg-card p-4 rounded-lg">

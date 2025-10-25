@@ -28,6 +28,15 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
     try {
       const users = JSON.parse(localStorage.getItem('users') || '{}');
       
+      // Migrate existing users without ID
+      Object.keys(users).forEach(email => {
+        if (!users[email].id) {
+          const userCount = Object.keys(users).length;
+          users[email].id = '#' + (1000 + userCount);
+        }
+      });
+      localStorage.setItem('users', JSON.stringify(users));
+      
       if (isLogin) {
         if (!users[email]) {
           setError('Пользователь не найден');
@@ -57,7 +66,15 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
           return;
         }
 
-        const userId = 'USR-' + Date.now().toString(36).toUpperCase();
+        // Get next user ID
+        const existingIds = Object.values(users)
+          .map((u: any) => u.id)
+          .filter((id: string) => id && id.startsWith('#'))
+          .map((id: string) => parseInt(id.substring(1)))
+          .filter((num: number) => !isNaN(num));
+        
+        const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1000;
+        const userId = '#' + nextId;
         
         const newUser = {
           id: userId,

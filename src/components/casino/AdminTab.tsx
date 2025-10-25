@@ -98,10 +98,10 @@ const AdminTab = ({ onClose }: AdminTabProps) => {
           <div>
             <label className="text-sm font-semibold mb-2 block">ID игрока</label>
             <Input
-              placeholder="USR-XXX"
+              placeholder="#1000"
               value={userId}
-              onChange={(e) => setUserId(e.target.value.toUpperCase())}
-              className="bg-secondary/50 font-mono"
+              onChange={(e) => setUserId(e.target.value)}
+              className="bg-secondary/50 font-mono text-lg"
             />
           </div>
 
