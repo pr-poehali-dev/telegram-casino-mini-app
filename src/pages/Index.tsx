@@ -56,6 +56,7 @@ const Index = () => {
   const [selectedCase, setSelectedCase] = useState<typeof cases[0] | null>(null);
   const [isOpening, setIsOpening] = useState(false);
   const [rouletteItems, setRouletteItems] = useState<CaseItem[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [wonItem, setWonItem] = useState<CaseItem | null>(null);
   const [inventory, setInventory] = useState<UpgradeItem[]>([]);
   const [upgradeFrom, setUpgradeFrom] = useState<UpgradeItem | null>(null);
@@ -64,6 +65,22 @@ const Index = () => {
   const [timeUntilFree, setTimeUntilFree] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  const playTickSound = () => {
+    if (!audioContext) return;
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.05);
+  };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -158,9 +175,17 @@ const Index = () => {
       };
     };
 
-    const items = Array.from({ length: 50 }, () => generateRandomItem());
-    const winningIndex = 45;
+    const items = Array.from({ length: 60 }, () => generateRandomItem());
+    const winningIndex = Math.floor(items.length / 2);
+    items[winningIndex] = generateRandomItem();
     setRouletteItems(items);
+
+    if (!audioContext) {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(ctx);
+    }
+
+    playTickSound();
 
     setTimeout(() => {
       const newItem = items[winningIndex];
@@ -174,7 +199,7 @@ const Index = () => {
         rarity: newItem.rarity,
       };
       setInventory([...inventory, upgradeItem]);
-    }, 10000);
+    }, 8000);
   };
 
   const performUpgrade = () => {
@@ -506,29 +531,37 @@ const Index = () => {
         <DialogContent className="bg-card border-primary/30 max-w-lg">
           {isOpening ? (
             <div className="py-6">
-              <h3 className="text-xl font-bold mb-4 text-center">Открываем кейс...</h3>
-              <div className="relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-                  <Icon name="ChevronDown" className="text-primary animate-bounce" size={32} />
-                </div>
-                <div className="relative h-32 overflow-hidden rounded-lg bg-secondary/50">
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-0.5 h-full bg-primary/50 z-10 shadow-lg shadow-primary/50"></div>
+              <h3 className="text-xl font-bold mb-4 text-center gold-text-glow">Открываем кейс...</h3>
+              <div className="relative mb-4">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20">
+                  <div className="flex flex-col items-center">
+                    <div className="text-3xl animate-bounce">▼</div>
                   </div>
-                  <div className="flex gap-2 py-4 pl-4 animate-roulette">
+                </div>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
+                  <div className="flex flex-col items-center">
+                    <div className="text-3xl animate-bounce" style={{ animationDelay: '0.15s' }}>▲</div>
+                  </div>
+                </div>
+                <div className="relative h-32 overflow-hidden rounded-lg bg-gradient-to-b from-secondary/30 via-secondary/50 to-secondary/30 border-2 border-primary/20">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                    <div className="w-1 h-full bg-gradient-to-b from-transparent via-primary to-transparent shadow-[0_0_20px_rgba(255,215,0,0.5)]"></div>
+                  </div>
+                  <div className="flex gap-2 py-4 pl-[calc(50%-52px)] animate-roulette">
                     {rouletteItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-1 gap-0.5 border-2 border-white/20`}
+                        className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-1 gap-0.5 border-2 border-white/30 shadow-lg transition-transform hover:scale-105`}
                       >
                         <div className="text-2xl">{item.image}</div>
-                        <div className="text-[10px] font-semibold text-center leading-tight">{item.name}</div>
-                        <div className="text-xs font-bold text-primary-foreground">{item.price}⭐</div>
+                        <div className="text-[9px] font-bold text-center leading-tight text-white drop-shadow-md">{item.name}</div>
+                        <div className="text-xs font-bold text-white bg-black/30 px-1.5 py-0.5 rounded">{item.price}⭐</div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
+              <p className="text-center text-sm text-muted-foreground animate-pulse">Удача решает всё...</p>
             </div>
           ) : wonItem ? (
             <div className="text-center py-6">
