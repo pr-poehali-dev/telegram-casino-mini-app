@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,26 +10,14 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
-  const { user: tgUser, isTelegramWebApp } = useTelegramWebApp();
   const [telegramId, setTelegramId] = useState('');
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (tgUser && isTelegramWebApp) {
-      handleAuth(tgUser.id, tgUser.username || '', tgUser.first_name, tgUser.last_name || '');
-    }
-  }, [tgUser, isTelegramWebApp]);
-
-  const handleAuth = async (
-    id?: number,
-    user?: string,
-    fname?: string,
-    lname?: string
-  ) => {
-    const authTelegramId = id || parseInt(telegramId);
+  const handleAuth = async () => {
+    const authTelegramId = parseInt(telegramId);
     
     if (!authTelegramId) {
       setError('Введите ваш Telegram ID');
@@ -48,9 +35,9 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
         },
         body: JSON.stringify({
           telegram_id: authTelegramId,
-          username: user || username || '',
-          first_name: fname || firstName || '',
-          last_name: lname || '',
+          username: username || '',
+          first_name: firstName || '',
+          last_name: '',
         }),
       });
 
@@ -89,14 +76,6 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
             <div className="text-center py-8">
               <Icon name="Loader2" className="mx-auto animate-spin text-primary mb-4" size={48} />
               <p className="text-muted-foreground">Авторизация...</p>
-            </div>
-          ) : isTelegramWebApp ? (
-            <div className="text-center py-4">
-              <div className="text-6xl mb-4">✅</div>
-              <p className="text-lg font-semibold mb-2">Автоматический вход</p>
-              <p className="text-sm text-muted-foreground">
-                Вы авторизуетесь через Telegram Web App
-              </p>
             </div>
           ) : (
             <>
