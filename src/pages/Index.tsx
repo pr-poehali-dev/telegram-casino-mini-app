@@ -7,6 +7,7 @@ import Icon from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AuthModal from '@/components/AuthModal';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 interface CaseItem {
   id: number;
@@ -38,6 +39,7 @@ const rarityColors = {
 };
 
 const Index = () => {
+  const { webApp } = useTelegramWebApp();
   const [activeTab, setActiveTab] = useState('home');
   const [balance, setBalance] = useState(1000);
   const [selectedCase, setSelectedCase] = useState<typeof cases[0] | null>(null);
@@ -50,6 +52,14 @@ const Index = () => {
   const [timeUntilFree, setTimeUntilFree] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    if (webApp) {
+      webApp.expand();
+      webApp.headerColor = '#0A0A0F';
+      webApp.backgroundColor = '#0A0A0F';
+    }
+  }, [webApp]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
