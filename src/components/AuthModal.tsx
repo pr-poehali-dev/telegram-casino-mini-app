@@ -126,57 +126,56 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                 </div>
               )}
 
-              <>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-semibold mb-2 block">
-                        Email <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        type="email"
-                        placeholder="example@mail.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-secondary border-primary/30"
-                        disabled={isLoading}
-                      />
-                    </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Email <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="example@mail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-secondary border-primary/30"
+                    disabled={isLoading}
+                  />
+                </div>
 
-                    <div>
-                      <label className="text-sm font-semibold mb-2 block">
-                        Пароль <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-secondary border-primary/30"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Пароль <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-secondary border-primary/30"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
 
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isLoading || !email || !password}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                  >
-                    <Icon name="LogIn" className="mr-2" size={16} />
-                    {isLogin ? 'Войти' : 'Зарегистрироваться'}
-                  </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading || !email || !password}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+              >
+                <Icon name="LogIn" className="mr-2" size={16} />
+                {isLogin ? 'Войти' : 'Зарегистрироваться'}
+              </Button>
 
-                  <Button
-                    onClick={() => {
-                      setIsLogin(!isLogin);
-                      setError('');
-                    }}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
-                  </Button>
-              </>
+              <Button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+                variant="ghost"
+                className="w-full"
+              >
+                {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
+              </Button>
+            </>
           )}
         </div>
       </DialogContent>
