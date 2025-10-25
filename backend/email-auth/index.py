@@ -98,9 +98,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            email_escaped = email.replace("'", "''")
             cur.execute(
-                'SELECT id FROM t_p79007879_telegram_casino_mini.users WHERE email = %s',
-                (email,)
+                f"SELECT id FROM t_p79007879_telegram_casino_mini.users WHERE email = '{email_escaped}'"
             )
             existing = cur.fetchone()
             
@@ -116,12 +116,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             password_hash = hash_password(password)
             
-            cur.execute('''
+            cur.execute(f'''
                 INSERT INTO t_p79007879_telegram_casino_mini.users 
                 (telegram_id, email, password_hash, is_email_verified, balance)
-                VALUES (0, %s, %s, TRUE, 1000)
+                VALUES (0, '{email_escaped}', '{password_hash}', TRUE, 1000)
                 RETURNING id
-            ''', (email, password_hash))
+            ''')
             
             user_id = cur.fetchone()[0]
             conn.commit()
@@ -156,12 +156,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             password_hash = hash_password(password)
+            email_escaped = email.replace("'", "''")
             
-            cur.execute('''
+            cur.execute(f'''
                 SELECT id, is_email_verified, balance
                 FROM t_p79007879_telegram_casino_mini.users 
-                WHERE email = %s AND password_hash = %s
-            ''', (email, password_hash))
+                WHERE email = '{email_escaped}' AND password_hash = '{password_hash}'
+            ''')
             
             user = cur.fetchone()
             
@@ -177,11 +178,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             user_id, is_verified, balance = user
             
-            cur.execute('''
+            cur.execute(f'''
                 UPDATE t_p79007879_telegram_casino_mini.users 
                 SET last_login = CURRENT_TIMESTAMP
-                WHERE id = %s
-            ''', (user_id,))
+                WHERE id = {user_id}
+            ''')
             conn.commit()
             
             cur.close()
