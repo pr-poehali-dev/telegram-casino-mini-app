@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "register",
+        "email": "test@example.com",
+        "password": "testpassword123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login unverified user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "email": "test@example.com",
+        "password": "testpassword123"
+      },
+      "expectedStatus": 403,
+      "expectedBody": {
+        "needsVerification": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -9,14 +9,94 @@ interface AuthModalProps {
   onAuthSuccess: (userData: any) => void;
 }
 
+const API_URL = 'https://functions.poehali.dev/bdc6396e-6e37-490c-8498-1a249b75d550';
+
 const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const [needsVerification, setNeedsVerification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleAuth = async () => {
+  const handleRegister = async () => {
+    if (!email || !password) {
+      setError('Заполните все поля');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'register',
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Ошибка регистрации');
+        setIsLoading(false);
+        return;
+      }
+
+      setNeedsVerification(true);
+      setSuccessMessage('📧 Код отправлен на email! Проверь почту.');
+    } catch (err) {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!verificationCode) {
+      setError('Введите код подтверждения');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify',
+          email,
+          code: verificationCode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Неверный код');
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      onAuthSuccess({ user: data.user });
+    } catch (err) {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
     if (!email || !password) {
       setError('Заполните все поля');
       return;
@@ -26,80 +106,46 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
     setError('');
 
     try {
-      const users = JSON.parse(localStorage.getItem('users') || '{}');
-      
-      // Migrate existing users without ID
-      Object.keys(users).forEach(email => {
-        if (!users[email].id) {
-          const userCount = Object.keys(users).length;
-          users[email].id = '#' + (1000 + userCount);
-        }
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          email,
+          password
+        })
       });
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      if (isLogin) {
-        if (!users[email]) {
-          setError('Пользователь не найден');
-          setIsLoading(false);
-          return;
-        }
-        
-        if (users[email].password !== password) {
-          setError('Неверный пароль');
-          setIsLoading(false);
-          return;
-        }
 
-        const userData = {
-          id: users[email].id,
-          email,
-          balance: users[email].balance || 1000,
-          inventory: users[email].inventory || [],
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        onAuthSuccess({ user: userData });
-      } else {
-        if (users[email]) {
-          setError('Пользователь уже существует');
-          setIsLoading(false);
-          return;
-        }
+      const data = await response.json();
 
-        // Get next user ID
-        const existingIds = Object.values(users)
-          .map((u: any) => u.id)
-          .filter((id: string) => id && id.startsWith('#'))
-          .map((id: string) => parseInt(id.substring(1)))
-          .filter((num: number) => !isNaN(num));
-        
-        const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1000;
-        const userId = '#' + nextId;
-        
-        const newUser = {
-          id: userId,
-          password,
-          balance: 1000,
-          inventory: [],
-        };
-        
-        users[email] = newUser;
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        const userData = {
-          id: userId,
-          email,
-          balance: 1000,
-          inventory: [],
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        onAuthSuccess({ user: userData });
+      if (response.status === 403 && data.needsVerification) {
+        setError('Email не подтверждён! Запросите новый код.');
+        setIsLoading(false);
+        return;
       }
+
+      if (!response.ok) {
+        setError(data.error || 'Ошибка входа');
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      onAuthSuccess({ user: data.user });
     } catch (err) {
-      setError('Ошибка авторизации');
+      setError('Ошибка соединения с сервером');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (needsVerification) {
+      handleVerify();
+    } else if (isLogin) {
+      handleLogin();
+    } else {
+      handleRegister();
     }
   };
 
@@ -111,7 +157,11 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
             🦆 DuckCasino
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            {isLogin ? 'Войдите в аккаунт' : 'Создайте новый аккаунт'}
+            {needsVerification 
+              ? 'Подтвердите email' 
+              : isLogin 
+                ? 'Войдите в аккаунт' 
+                : 'Создайте новый аккаунт'}
           </DialogDescription>
         </DialogHeader>
 
@@ -129,64 +179,112 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                 </div>
               )}
 
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">
-                    Email <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    type="email"
-                    placeholder="example@mail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-secondary border-primary/30"
-                    disabled={isLoading}
-                  />
+              {successMessage && (
+                <div className="bg-green-500/20 border border-green-500/50 p-3 rounded-lg">
+                  <p className="text-sm text-green-400">{successMessage}</p>
                 </div>
+              )}
 
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">
-                    Пароль <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-secondary border-primary/30"
-                    disabled={isLoading}
-                  />
+              {needsVerification ? (
+                <div className="space-y-3">
+                  <div className="bg-primary/10 p-4 rounded-lg text-center">
+                    <Icon name="Mail" className="mx-auto text-primary mb-2" size={32} />
+                    <p className="text-sm text-muted-foreground mb-1">Код отправлен на:</p>
+                    <p className="font-semibold">{email}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold mb-2 block">
+                      Код из письма <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="123456"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="bg-secondary border-primary/30 text-center text-2xl font-bold tracking-widest"
+                      maxLength={6}
+                      disabled={isLoading}
+                      autoFocus
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleVerify}
+                    disabled={isLoading || verificationCode.length !== 6}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                  >
+                    <Icon name="CheckCircle" className="mr-2" size={16} />
+                    Подтвердить
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      setNeedsVerification(false);
+                      setVerificationCode('');
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    variant="ghost"
+                    className="w-full"
+                  >
+                    Назад
+                  </Button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-semibold mb-2 block">
+                        Email <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        type="email"
+                        placeholder="example@mail.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="bg-secondary border-primary/30"
+                        disabled={isLoading}
+                      />
+                    </div>
 
-              <Button
-                onClick={handleAuth}
-                disabled={isLoading || !email || !password}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-              >
-                {isLoading ? (
-                  <>
-                    <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-                    Загрузка...
-                  </>
-                ) : (
-                  <>
+                    <div>
+                      <label className="text-sm font-semibold mb-2 block">
+                        Пароль <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-secondary border-primary/30"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isLoading || !email || !password}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                  >
                     <Icon name="LogIn" className="mr-2" size={16} />
                     {isLogin ? 'Войти' : 'Зарегистрироваться'}
-                  </>
-                )}
-              </Button>
+                  </Button>
 
-              <Button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                }}
-                variant="ghost"
-                className="w-full"
-              >
-                {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
-              </Button>
+                  <Button
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    variant="ghost"
+                    className="w-full"
+                  >
+                    {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
+                  </Button>
+                </>
+              )}
             </>
           )}
         </div>
