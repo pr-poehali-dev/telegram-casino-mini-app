@@ -36,6 +36,29 @@ const Index = () => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
+      
+      // Migrate users without ID
+      if (!userData.id) {
+        const users = JSON.parse(localStorage.getItem('users') || '{}');
+        
+        // Assign IDs to all users without one
+        let nextId = 1000;
+        Object.keys(users).forEach(email => {
+          if (!users[email].id) {
+            users[email].id = '#' + nextId;
+            nextId++;
+          }
+        });
+        
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Update current user
+        if (users[userData.email]) {
+          userData.id = users[userData.email].id;
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+        }
+      }
+      
       setUser(userData);
       setBalance(userData.balance || 1000);
       setInventory(userData.inventory || []);
