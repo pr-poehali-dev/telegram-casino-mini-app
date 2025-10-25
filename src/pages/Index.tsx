@@ -24,10 +24,10 @@ interface UpgradeItem {
 }
 
 const cases = [
-  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 25, minPrize: 50, maxPrize: 500, image: '💎', isFree: true },
-  { id: 2, name: 'Золотой кейс', price: 500, minPrize: 250, maxPrize: 2500, image: '👑', isFree: false },
-  { id: 3, name: 'Легендарный кейс', price: 1000, minPrize: 500, maxPrize: 10000, image: '⭐', isFree: false },
-  { id: 4, name: 'NFT кейс', price: 2000, minPrize: 1000, maxPrize: 50000, image: '🎨', isFree: false },
+  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 5, minPrize: 10, maxPrize: 100, image: '💎', isFree: true },
+  { id: 2, name: 'Золотой кейс', price: 100, minPrize: 50, maxPrize: 500, image: '👑', isFree: false },
+  { id: 3, name: 'Легендарный кейс', price: 200, minPrize: 100, maxPrize: 2000, image: '⭐', isFree: false },
+  { id: 4, name: 'NFT кейс', price: 400, minPrize: 200, maxPrize: 10000, image: '🎨', isFree: false },
 ];
 
 const rarityColors = {
