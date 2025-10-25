@@ -126,8 +126,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                 </div>
               )}
 
-              {
-                <>
+              <>
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm font-semibold mb-2 block">
@@ -177,9 +176,7 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
                   >
                     {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
                   </Button>
-                </>
-              )}
-            </>
+              </>
           )}
         </div>
       </DialogContent>
