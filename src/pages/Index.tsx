@@ -507,21 +507,26 @@ const Index = () => {
           {isOpening ? (
             <div className="py-6">
               <h3 className="text-xl font-bold mb-4 text-center">Открываем кейс...</h3>
-              <div className="relative h-32 overflow-hidden rounded-lg bg-secondary/50">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-1 h-full bg-primary z-10"></div>
+              <div className="relative">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20">
+                  <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[16px] border-t-primary drop-shadow-lg"></div>
                 </div>
-                <div className="flex gap-2 py-4 animate-roulette">
-                  {rouletteItems.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-1 gap-0.5`}
-                    >
-                      <div className="text-2xl">{item.image}</div>
-                      <div className="text-[10px] font-semibold text-center leading-tight">{item.name}</div>
-                      <div className="text-xs font-bold text-primary-foreground">{item.price}⭐</div>
-                    </div>
-                  ))}
+                <div className="relative h-32 overflow-hidden rounded-lg bg-secondary/50">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-1 h-full bg-primary z-10"></div>
+                  </div>
+                  <div className="flex gap-2 py-4 animate-roulette">
+                    {rouletteItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-1 gap-0.5`}
+                      >
+                        <div className="text-2xl">{item.image}</div>
+                        <div className="text-[10px] font-semibold text-center leading-tight">{item.name}</div>
+                        <div className="text-xs font-bold text-primary-foreground">{item.price}⭐</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
