@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,10 +23,10 @@ interface UpgradeItem {
 }
 
 const cases = [
-  { id: 1, name: 'Стартовый кейс', price: 100, minPrize: 50, maxPrize: 500, image: '💎' },
-  { id: 2, name: 'Золотой кейс', price: 500, minPrize: 250, maxPrize: 2500, image: '👑' },
-  { id: 3, name: 'Легендарный кейс', price: 1000, minPrize: 500, maxPrize: 10000, image: '⭐' },
-  { id: 4, name: 'NFT кейс', price: 2000, minPrize: 1000, maxPrize: 50000, image: '🎨' },
+  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 25, minPrize: 50, maxPrize: 500, image: '💎', isFree: true },
+  { id: 2, name: 'Золотой кейс', price: 500, minPrize: 250, maxPrize: 2500, image: '👑', isFree: false },
+  { id: 3, name: 'Легендарный кейс', price: 1000, minPrize: 500, maxPrize: 10000, image: '⭐', isFree: false },
+  { id: 4, name: 'NFT кейс', price: 2000, minPrize: 1000, maxPrize: 50000, image: '🎨', isFree: false },
 ];
 
 const rarityColors = {
@@ -45,16 +45,54 @@ const Index = () => {
   const [inventory, setInventory] = useState<UpgradeItem[]>([]);
   const [upgradeFrom, setUpgradeFrom] = useState<UpgradeItem | null>(null);
   const [upgradeChance, setUpgradeChance] = useState(50);
+  const [lastFreeOpen, setLastFreeOpen] = useState<number | null>(null);
+  const [timeUntilFree, setTimeUntilFree] = useState<string>('');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('lastFreeOpen');
+    if (saved) {
+      setLastFreeOpen(parseInt(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!lastFreeOpen) return;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const timePassed = now - lastFreeOpen;
+      const timeLeft = 24 * 60 * 60 * 1000 - timePassed;
+      
+      if (timeLeft <= 0) {
+        setTimeUntilFree('');
+        setLastFreeOpen(null);
+        localStorage.removeItem('lastFreeOpen');
+      } else {
+        const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+        setTimeUntilFree(`${hours}ч ${minutes}м`);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [lastFreeOpen]);
+
+  const canOpenFree = !lastFreeOpen || (Date.now() - lastFreeOpen) >= 24 * 60 * 60 * 1000;
 
   const openCase = (caseData: typeof cases[0]) => {
-    if (balance < caseData.price) {
+    if (caseData.isFree && canOpenFree) {
+      const now = Date.now();
+      setLastFreeOpen(now);
+      localStorage.setItem('lastFreeOpen', now.toString());
+    } else if (balance < caseData.price) {
       alert('Недостаточно средств!');
       return;
+    } else {
+      setBalance(balance - caseData.price);
     }
     
     setSelectedCase(caseData);
     setIsOpening(true);
-    setBalance(balance - caseData.price);
 
     setTimeout(() => {
       const rarityRoll = Math.random();
@@ -138,20 +176,42 @@ const Index = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-3">
-                {cases.slice(0, 4).map((caseItem) => (
-                  <Card
-                    key={caseItem.id}
-                    className="bg-card/50 border-primary/30 hover:border-primary transition-all cursor-pointer p-4 text-center"
-                    onClick={() => openCase(caseItem)}
-                  >
-                    <div className="text-4xl mb-2">{caseItem.image}</div>
-                    <h3 className="font-semibold text-sm mb-1">{caseItem.name}</h3>
-                    <div className="flex items-center justify-center gap-1 text-primary">
-                      <Icon name="Coins" size={14} />
-                      <span className="text-sm font-bold">{caseItem.price}</span>
-                    </div>
-                  </Card>
-                ))}
+                {cases.slice(0, 4).map((caseItem) => {
+                  const isFreeCase = caseItem.isFree;
+                  const showFreeTimer = isFreeCase && !canOpenFree;
+                  
+                  return (
+                    <Card
+                      key={caseItem.id}
+                      className="bg-card/50 border-primary/30 hover:border-primary transition-all cursor-pointer p-4 text-center relative"
+                      onClick={() => openCase(caseItem)}
+                    >
+                      {isFreeCase && canOpenFree && (
+                        <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">
+                          БЕСПЛАТНО
+                        </Badge>
+                      )}
+                      <div className="text-4xl mb-2">{caseItem.image}</div>
+                      <h3 className="font-semibold text-sm mb-1">{caseItem.name}</h3>
+                      {showFreeTimer ? (
+                        <div className="text-xs text-muted-foreground">
+                          Через: {timeUntilFree}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-1 text-primary">
+                          {isFreeCase && canOpenFree ? (
+                            <span className="text-sm font-bold text-green-500">БЕСПЛАТНО</span>
+                          ) : (
+                            <>
+                              <Icon name="Coins" size={14} />
+                              <span className="text-sm font-bold">{caseItem.price}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             </Card>
 
@@ -181,32 +241,54 @@ const Index = () => {
           <TabsContent value="cases" className="space-y-4 mt-0">
             <h2 className="text-xl font-bold mb-4">Все кейсы</h2>
             <div className="grid gap-4">
-              {cases.map((caseItem) => (
-                <Card
-                  key={caseItem.id}
-                  className="bg-card border-primary/20 hover:border-primary transition-all cursor-pointer overflow-hidden"
-                  onClick={() => openCase(caseItem)}
-                >
-                  <div className="flex items-center gap-4 p-4">
-                    <div className="text-5xl">{caseItem.image}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold mb-1">{caseItem.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <span>{caseItem.minPrize}⭐</span>
-                        <span>-</span>
-                        <span>{caseItem.maxPrize}⭐</span>
+              {cases.map((caseItem) => {
+                const isFreeCase = caseItem.isFree;
+                const showFreeTimer = isFreeCase && !canOpenFree;
+                
+                return (
+                  <Card
+                    key={caseItem.id}
+                    className="bg-card border-primary/20 hover:border-primary transition-all cursor-pointer overflow-hidden relative"
+                    onClick={() => openCase(caseItem)}
+                  >
+                    {isFreeCase && canOpenFree && (
+                      <Badge className="absolute top-2 right-2 bg-green-500 text-white">
+                        БЕСПЛАТНО
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-4 p-4">
+                      <div className="text-5xl">{caseItem.image}</div>
+                      <div className="flex-1">
+                        <h3 className="font-bold mb-1">{caseItem.name}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <span>{caseItem.minPrize}⭐</span>
+                          <span>-</span>
+                          <span>{caseItem.maxPrize}⭐</span>
+                        </div>
+                        {showFreeTimer ? (
+                          <div className="text-sm text-muted-foreground">
+                            Доступно через: {timeUntilFree}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            {isFreeCase && canOpenFree ? (
+                              <span className="font-bold text-green-500">БЕСПЛАТНО</span>
+                            ) : (
+                              <>
+                                <Icon name="Coins" className="text-primary" size={16} />
+                                <span className="font-bold text-primary">{caseItem.price}</span>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Icon name="Coins" className="text-primary" size={16} />
-                        <span className="font-bold text-primary">{caseItem.price}</span>
-                      </div>
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        Открыть
+                      </Button>
                     </div>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Открыть
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 
