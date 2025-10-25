@@ -15,7 +15,6 @@ const Index = () => {
   const [balance, setBalance] = useState(1000);
   const [inventory, setInventory] = useState<UpgradeItem[]>([]);
   const [upgradeFrom, setUpgradeFrom] = useState<UpgradeItem | null>(null);
-  const [upgradeChance] = useState(50);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [lastFreeOpen, setLastFreeOpen] = useState<number | null>(null);
@@ -121,13 +120,17 @@ const Index = () => {
     setIsBoxDialogOpen(true);
   };
 
-  const performUpgrade = () => {
+  const performUpgrade = (multiplier: number) => {
     if (!upgradeFrom) return;
+    
+    const baseChance = 70;
+    const reduction = (multiplier - 1.5) * 40;
+    const upgradeChance = Math.max(5, Math.round(baseChance - reduction));
     
     const success = Math.random() * 100 < upgradeChance;
     
     if (success) {
-      const newValue = Math.floor(upgradeFrom.value * 1.5);
+      const newValue = Math.floor(upgradeFrom.value * multiplier);
       const upgradedItem: UpgradeItem = {
         ...upgradeFrom,
         value: newValue,
@@ -137,7 +140,6 @@ const Index = () => {
       setInventory(inventory.map(item => 
         item.id === upgradeFrom.id ? upgradedItem : item
       ));
-      setBalance(balance + (newValue - upgradeFrom.value));
       alert('✅ Апгрейд успешен!');
     } else {
       setInventory(inventory.filter(item => item.id !== upgradeFrom.id));
@@ -145,11 +147,6 @@ const Index = () => {
     }
     
     setUpgradeFrom(null);
-  };
-
-  const sellItem = (item: UpgradeItem) => {
-    setInventory(inventory.filter(i => i.id !== item.id));
-    setBalance(balance + item.value);
   };
 
   const logout = () => {
@@ -204,7 +201,6 @@ const Index = () => {
               upgradeFrom={upgradeFrom}
               setUpgradeFrom={setUpgradeFrom}
               inventory={inventory}
-              upgradeChance={upgradeChance}
               performUpgrade={performUpgrade}
             />
           </TabsContent>
@@ -212,7 +208,9 @@ const Index = () => {
           <TabsContent value="inventory" className="space-y-4 mt-0">
             <InventoryTab 
               inventory={inventory}
-              sellItem={sellItem}
+              balance={balance}
+              setBalance={setBalance}
+              setInventory={setInventory}
             />
           </TabsContent>
         </Tabs>

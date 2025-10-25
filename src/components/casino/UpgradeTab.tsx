@@ -1,25 +1,34 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
 import { TabsContent } from '@/components/ui/tabs';
 import { UpgradeItem, rarityColors } from './types';
+import { useState } from 'react';
 
 interface UpgradeTabProps {
   inventory: UpgradeItem[];
   upgradeFrom: UpgradeItem | null;
-  upgradeChance: number;
   setUpgradeFrom: (item: UpgradeItem | null) => void;
-  performUpgrade: () => void;
+  performUpgrade: (multiplier: number) => void;
 }
 
 const UpgradeTab = ({
   inventory,
   upgradeFrom,
-  upgradeChance,
   setUpgradeFrom,
   performUpgrade,
 }: UpgradeTabProps) => {
+  const [multiplier, setMultiplier] = useState(1.5);
+  
+  const calculateChance = (mult: number) => {
+    const baseChance = 70;
+    const reduction = (mult - 1.5) * 40;
+    return Math.max(5, Math.round(baseChance - reduction));
+  };
+  
+  const upgradeChance = calculateChance(multiplier);
   return (
     <TabsContent value="upgrade" className="space-y-4 mt-0">
       <Card className="bg-gradient-to-br from-secondary to-secondary/50 p-6 border-primary/20">
@@ -28,7 +37,7 @@ const UpgradeTab = ({
           Апгрейд предметов
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Улучши свои предметы с шансом {upgradeChance}%
+          Выбери множитель и попытай удачу!
         </p>
         
         {!upgradeFrom ? (
@@ -66,16 +75,37 @@ const UpgradeTab = ({
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Icon name="ArrowUp" size={16} />
-                <span>→ {Math.floor(upgradeFrom.value * 1.5)}⭐</span>
+                <span>→ {Math.floor(upgradeFrom.value * multiplier)}⭐</span>
               </div>
             </Card>
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Шанс успеха</span>
-                <span className="font-bold text-primary">{upgradeChance}%</span>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Множитель</span>
+                  <span className="font-bold text-primary">×{multiplier.toFixed(1)}</span>
+                </div>
+                <Slider
+                  value={[multiplier]}
+                  onValueChange={(value) => setMultiplier(value[0])}
+                  min={1.5}
+                  max={5}
+                  step={0.5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>×1.5</span>
+                  <span>×5.0</span>
+                </div>
               </div>
-              <Progress value={upgradeChance} className="h-2" />
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Шанс успеха</span>
+                  <span className="font-bold text-primary">{upgradeChance}%</span>
+                </div>
+                <Progress value={upgradeChance} className="h-2" />
+              </div>
             </div>
             
             <div className="flex gap-2">
@@ -88,7 +118,7 @@ const UpgradeTab = ({
               </Button>
               <Button
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                onClick={performUpgrade}
+                onClick={() => performUpgrade(multiplier)}
               >
                 Улучшить
               </Button>
