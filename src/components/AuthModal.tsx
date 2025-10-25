@@ -10,17 +10,15 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
-  const [telegramId, setTelegramId] = useState('');
-  const [username, setUsername] = useState('');
-  const [firstName, setFirstName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleAuth = async () => {
-    const authTelegramId = parseInt(telegramId);
-    
-    if (!authTelegramId) {
-      setError('Введите ваш Telegram ID');
+    if (!email || !password) {
+      setError('Заполните все поля');
       return;
     }
 
@@ -28,32 +26,56 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
     setError('');
 
     try {
-      const response = await fetch('https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          telegram_id: authTelegramId,
-          username: username || '',
-          first_name: firstName || '',
-          last_name: '',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        if (data.last_free_open) {
-          localStorage.setItem('lastFreeOpen', new Date(data.last_free_open).getTime().toString());
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+      
+      if (isLogin) {
+        if (!users[email]) {
+          setError('Пользователь не найден');
+          setIsLoading(false);
+          return;
         }
-        onAuthSuccess(data);
+        
+        if (users[email].password !== password) {
+          setError('Неверный пароль');
+          setIsLoading(false);
+          return;
+        }
+
+        const userData = {
+          email,
+          balance: users[email].balance || 1000,
+          inventory: users[email].inventory || [],
+        };
+        
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        onAuthSuccess({ user: userData });
       } else {
-        setError(data.error || 'Ошибка авторизации');
+        if (users[email]) {
+          setError('Пользователь уже существует');
+          setIsLoading(false);
+          return;
+        }
+
+        const newUser = {
+          password,
+          balance: 1000,
+          inventory: [],
+        };
+        
+        users[email] = newUser;
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        const userData = {
+          email,
+          balance: 1000,
+          inventory: [],
+        };
+        
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        onAuthSuccess({ user: userData });
       }
     } catch (err) {
-      setError('Ошибка подключения к серверу');
+      setError('Ошибка авторизации');
     } finally {
       setIsLoading(false);
     }
@@ -63,11 +85,11 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="bg-card border-primary/30 max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center mb-2 gold-text-glow">
-            🎰 CASINO
+          <DialogTitle className="text-2xl font-bold text-center mb-2 gold-text-glow flex items-center justify-center gap-2">
+            🦆 DuckCasino
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            Войдите через Telegram, чтобы начать играть
+            {isLogin ? 'Войдите в аккаунт' : 'Создайте новый аккаунт'}
           </DialogDescription>
         </DialogHeader>
 
@@ -75,26 +97,10 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
           {isLoading ? (
             <div className="text-center py-8">
               <Icon name="Loader2" className="mx-auto animate-spin text-primary mb-4" size={48} />
-              <p className="text-muted-foreground">Авторизация...</p>
+              <p className="text-muted-foreground">Загрузка...</p>
             </div>
           ) : (
             <>
-              <div className="bg-secondary/50 p-4 rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-sm text-primary">
-                  <Icon name="Info" size={16} />
-                  <span className="font-semibold">Как получить Telegram ID?</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  1. Откройте бот <span className="text-primary font-semibold">@userinfobot</span> в Telegram
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  2. Нажмите /start и скопируйте ваш ID
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  3. Вставьте ID в поле ниже
-                </p>
-              </div>
-
               {error && (
                 <div className="bg-destructive/20 border border-destructive/50 p-3 rounded-lg">
                   <p className="text-sm text-destructive">{error}</p>
@@ -104,37 +110,27 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-semibold mb-2 block">
-                    Telegram ID <span className="text-destructive">*</span>
+                    Email <span className="text-destructive">*</span>
                   </label>
                   <Input
-                    type="number"
-                    placeholder="123456789"
-                    value={telegramId}
-                    onChange={(e) => setTelegramId(e.target.value)}
+                    type="email"
+                    placeholder="example@mail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="bg-secondary border-primary/30"
                     disabled={isLoading}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold mb-2 block">Имя пользователя</label>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Пароль <span className="text-destructive">*</span>
+                  </label>
                   <Input
-                    type="text"
-                    placeholder="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="bg-secondary border-primary/30"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Имя</label>
-                  <Input
-                    type="text"
-                    placeholder="Иван"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="bg-secondary border-primary/30"
                     disabled={isLoading}
                   />
@@ -142,26 +138,33 @@ const AuthModal = ({ isOpen, onAuthSuccess }: AuthModalProps) => {
               </div>
 
               <Button
-                onClick={() => handleAuth()}
-                disabled={isLoading || !telegramId}
+                onClick={handleAuth}
+                disabled={isLoading || !email || !password}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {isLoading ? (
                   <>
                     <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-                    Вход...
+                    Загрузка...
                   </>
                 ) : (
                   <>
                     <Icon name="LogIn" className="mr-2" size={16} />
-                    Войти
+                    {isLogin ? 'Войти' : 'Зарегистрироваться'}
                   </>
                 )}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
-                Один Telegram аккаунт = один игровой аккаунт
-              </p>
+              <Button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+                variant="ghost"
+                className="w-full"
+              >
+                {isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт?'}
+              </Button>
             </>
           )}
         </div>
