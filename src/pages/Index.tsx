@@ -23,11 +23,24 @@ interface UpgradeItem {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
+const caseItems = [
+  { emoji: '🎮', name: 'Игровая консоль', price: 0.8 },
+  { emoji: '🎧', name: 'Наушники', price: 1.2 },
+  { emoji: '⌚', name: 'Часы', price: 1.5 },
+  { emoji: '💻', name: 'Ноутбук', price: 2.5 },
+  { emoji: '📱', name: 'Смартфон', price: 2.0 },
+  { emoji: '🎸', name: 'Гитара', price: 1.8 },
+  { emoji: '📷', name: 'Камера', price: 2.2 },
+  { emoji: '🎯', name: 'Дартс', price: 0.5 },
+  { emoji: '🏆', name: 'Кубок', price: 3.0 },
+  { emoji: '💍', name: 'Кольцо', price: 2.8 },
+];
+
 const cases = [
-  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 2.5, minPrize: 0.5, maxPrize: 3, image: '💎', isFree: true },
-  { id: 2, name: 'Золотой кейс', price: 50, minPrize: 5, maxPrize: 40, image: '👑', isFree: false },
-  { id: 3, name: 'Легендарный кейс', price: 100, minPrize: 10, maxPrize: 80, image: '⭐', isFree: false },
-  { id: 4, name: 'NFT кейс', price: 200, minPrize: 20, maxPrize: 150, image: '🎨', isFree: false },
+  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 2.5, minPrize: 0.5, maxPrize: 3.5, image: '💎', isFree: true },
+  { id: 2, name: 'Золотой кейс', price: 50, minPrize: 10, maxPrize: 55, image: '👑', isFree: false },
+  { id: 3, name: 'Легендарный кейс', price: 100, minPrize: 20, maxPrize: 110, image: '⭐', isFree: false },
+  { id: 4, name: 'NFT кейс', price: 200, minPrize: 40, maxPrize: 220, image: '🎨', isFree: false },
 ];
 
 const rarityColors = {
@@ -125,20 +138,22 @@ const Index = () => {
     const generateRandomItem = () => {
       const rarityRoll = Math.random();
       let rarity: CaseItem['rarity'];
-      if (rarityRoll < 0.7) rarity = 'common';
-      else if (rarityRoll < 0.9) rarity = 'rare';
-      else if (rarityRoll < 0.98) rarity = 'epic';
+      if (rarityRoll < 0.65) rarity = 'common';
+      else if (rarityRoll < 0.88) rarity = 'rare';
+      else if (rarityRoll < 0.97) rarity = 'epic';
       else rarity = 'legendary';
 
-      const prizeValue = Math.floor(
-        Math.random() * (caseData.maxPrize - caseData.minPrize) + caseData.minPrize
+      const prizeValue = parseFloat(
+        (Math.random() * (caseData.maxPrize - caseData.minPrize) + caseData.minPrize).toFixed(1)
       );
+
+      const randomCaseItem = caseItems[Math.floor(Math.random() * caseItems.length)];
 
       return {
         id: Date.now() + Math.random(),
-        name: `${rarity === 'legendary' ? '⭐ ' : ''}Приз ${prizeValue}`,
+        name: randomCaseItem.name,
         price: prizeValue,
-        image: caseData.image,
+        image: randomCaseItem.emoji,
         rarity,
       };
     };
@@ -500,10 +515,11 @@ const Index = () => {
                   {rouletteItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-2`}
+                      className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-1 gap-0.5`}
                     >
-                      <div className="text-3xl">{item.image}</div>
-                      <div className="text-xs font-bold mt-1">{item.price}⭐</div>
+                      <div className="text-2xl">{item.image}</div>
+                      <div className="text-[10px] font-semibold text-center leading-tight">{item.name}</div>
+                      <div className="text-xs font-bold text-primary-foreground">{item.price}⭐</div>
                     </div>
                   ))}
                 </div>
