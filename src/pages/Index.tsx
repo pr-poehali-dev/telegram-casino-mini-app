@@ -30,7 +30,9 @@ const Index = () => {
   const [showAdminPrompt, setShowAdminPrompt] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
   const ADMIN_PASSWORD = 'admin2025';
+  const CHANNEL_URL = 'https://t.me/tgDuckCasino';
 
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
@@ -123,6 +125,14 @@ const Index = () => {
         alert('⏰ Бесплатный бокс будет доступен через: ' + timeUntilFree);
         return;
       }
+      
+      // Check subscription
+      const hasSubscribed = localStorage.getItem('subscribed_to_channel');
+      if (!hasSubscribed) {
+        setShowSubscribeDialog(true);
+        return;
+      }
+      
       setLastFreeOpen(Date.now());
     } else {
       if (balance < box.price) {
@@ -323,6 +333,48 @@ const Index = () => {
             </div>
             <Button onClick={checkAdminPassword} className="w-full bg-red-600 hover:bg-red-700">
               Войти
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSubscribeDialog} onOpenChange={setShowSubscribeDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-center justify-center">
+              <span className="text-2xl">💎</span>
+              Подпишись на канал
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-center text-muted-foreground">
+              Чтобы открыть <strong className="text-primary">Бесплатный бокс</strong>, подпишись на наш Telegram канал
+            </p>
+            
+            <div className="bg-card p-4 rounded-lg border border-primary/20 text-center">
+              <Icon name="Bell" className="mx-auto mb-2 text-primary" size={32} />
+              <p className="text-sm text-muted-foreground">Узнавай первым о бонусах и акциях!</p>
+            </div>
+
+            <Button 
+              onClick={() => window.open(CHANNEL_URL, '_blank')}
+              className="w-full bg-[#0088cc] hover:bg-[#0088cc]/90"
+              size="lg"
+            >
+              <Icon name="Send" size={20} className="mr-2" />
+              Перейти в Telegram
+            </Button>
+
+            <Button
+              onClick={() => {
+                localStorage.setItem('subscribed_to_channel', 'true');
+                setShowSubscribeDialog(false);
+                alert('✅ Спасибо за подписку! Теперь можешь открыть бокс');
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Я подписался!
             </Button>
           </div>
         </DialogContent>
