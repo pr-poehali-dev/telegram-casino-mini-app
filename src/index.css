@@ -94,6 +94,18 @@
   }
 
   .animate-roulette {
-    animation: roulette 4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: roulette 10s cubic-bezier(0.1, 0.3, 0.3, 1) forwards;
+  }
+
+  .fog-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at center,
+      transparent 20%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+    pointer-events: none;
+    z-index: 5;
   }
 }
