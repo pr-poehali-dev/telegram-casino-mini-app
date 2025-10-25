@@ -24,10 +24,10 @@ interface UpgradeItem {
 }
 
 const cases = [
-  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 2.5, minPrize: 5, maxPrize: 50, image: '💎', isFree: true },
-  { id: 2, name: 'Золотой кейс', price: 50, minPrize: 25, maxPrize: 250, image: '👑', isFree: false },
-  { id: 3, name: 'Легендарный кейс', price: 100, minPrize: 50, maxPrize: 1000, image: '⭐', isFree: false },
-  { id: 4, name: 'NFT кейс', price: 200, minPrize: 100, maxPrize: 5000, image: '🎨', isFree: false },
+  { id: 1, name: 'БЕСПЛАТНЫЙ КЕЙС', price: 2.5, minPrize: 0.5, maxPrize: 3, image: '💎', isFree: true },
+  { id: 2, name: 'Золотой кейс', price: 50, minPrize: 5, maxPrize: 40, image: '👑', isFree: false },
+  { id: 3, name: 'Легендарный кейс', price: 100, minPrize: 10, maxPrize: 80, image: '⭐', isFree: false },
+  { id: 4, name: 'NFT кейс', price: 200, minPrize: 20, maxPrize: 150, image: '🎨', isFree: false },
 ];
 
 const rarityColors = {
@@ -42,6 +42,7 @@ const Index = () => {
   const [balance, setBalance] = useState(1000);
   const [selectedCase, setSelectedCase] = useState<typeof cases[0] | null>(null);
   const [isOpening, setIsOpening] = useState(false);
+  const [rouletteItems, setRouletteItems] = useState<CaseItem[]>([]);
   const [wonItem, setWonItem] = useState<CaseItem | null>(null);
   const [inventory, setInventory] = useState<UpgradeItem[]>([]);
   const [upgradeFrom, setUpgradeFrom] = useState<UpgradeItem | null>(null);
@@ -121,26 +122,33 @@ const Index = () => {
     setSelectedCase(caseData);
     setIsOpening(true);
 
-    setTimeout(() => {
+    const generateRandomItem = () => {
       const rarityRoll = Math.random();
       let rarity: CaseItem['rarity'];
-      if (rarityRoll < 0.5) rarity = 'common';
-      else if (rarityRoll < 0.8) rarity = 'rare';
-      else if (rarityRoll < 0.95) rarity = 'epic';
+      if (rarityRoll < 0.7) rarity = 'common';
+      else if (rarityRoll < 0.9) rarity = 'rare';
+      else if (rarityRoll < 0.98) rarity = 'epic';
       else rarity = 'legendary';
 
       const prizeValue = Math.floor(
         Math.random() * (caseData.maxPrize - caseData.minPrize) + caseData.minPrize
       );
 
-      const newItem: CaseItem = {
-        id: Date.now(),
+      return {
+        id: Date.now() + Math.random(),
         name: `${rarity === 'legendary' ? '⭐ ' : ''}Приз ${prizeValue}`,
         price: prizeValue,
         image: caseData.image,
         rarity,
       };
+    };
 
+    const items = Array.from({ length: 50 }, () => generateRandomItem());
+    const winningIndex = 45;
+    setRouletteItems(items);
+
+    setTimeout(() => {
+      const newItem = items[winningIndex];
       setWonItem(newItem);
       setIsOpening(false);
       
@@ -480,12 +488,26 @@ const Index = () => {
       </div>
 
       <Dialog open={isOpening || wonItem !== null} onOpenChange={(open) => !open && setWonItem(null)}>
-        <DialogContent className="bg-card border-primary/30">
+        <DialogContent className="bg-card border-primary/30 max-w-lg">
           {isOpening ? (
-            <div className="text-center py-8">
-              <div className="text-6xl mb-4 animate-spin-slow">{selectedCase?.image}</div>
-              <h3 className="text-xl font-bold mb-2">Открываем кейс...</h3>
-              <Progress value={66} className="w-full" />
+            <div className="py-6">
+              <h3 className="text-xl font-bold mb-4 text-center">Открываем кейс...</h3>
+              <div className="relative h-32 overflow-hidden rounded-lg bg-secondary/50">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-1 h-full bg-primary z-10"></div>
+                </div>
+                <div className="flex gap-2 py-4 animate-roulette">
+                  {rouletteItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex-shrink-0 w-24 h-24 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center p-2`}
+                    >
+                      <div className="text-3xl">{item.image}</div>
+                      <div className="text-xs font-bold mt-1">{item.price}⭐</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : wonItem ? (
             <div className="text-center py-6">

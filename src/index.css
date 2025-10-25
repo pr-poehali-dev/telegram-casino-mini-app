@@ -83,4 +83,17 @@
       background-position: -200% 0;
     }
   }
+
+  @keyframes roulette {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-24px * 45 - 8px * 45));
+    }
+  }
+
+  .animate-roulette {
+    animation: roulette 4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  }
 }
