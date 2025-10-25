@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import AuthModal from '@/components/AuthModal';
 
 interface CaseItem {
   id: number;
@@ -47,13 +48,39 @@ const Index = () => {
   const [upgradeChance, setUpgradeChance] = useState(50);
   const [lastFreeOpen, setLastFreeOpen] = useState<number | null>(null);
   const [timeUntilFree, setTimeUntilFree] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      setBalance(userData.balance);
+      setIsAuthenticated(true);
+    }
+    
     const saved = localStorage.getItem('lastFreeOpen');
     if (saved) {
       setLastFreeOpen(parseInt(saved));
     }
   }, []);
+
+  const handleAuthSuccess = (data: any) => {
+    setUser(data.user);
+    setBalance(data.user.balance);
+    setIsAuthenticated(true);
+    
+    if (data.inventory && data.inventory.length > 0) {
+      const mappedInventory = data.inventory.map((item: any, idx: number) => ({
+        id: Date.now() + idx,
+        name: item.name,
+        value: item.value,
+        rarity: item.rarity,
+      }));
+      setInventory(mappedInventory);
+    }
+  };
 
   useEffect(() => {
     if (!lastFreeOpen) return;
@@ -152,6 +179,10 @@ const Index = () => {
     
     setUpgradeFrom(null);
   };
+
+  if (!isAuthenticated) {
+    return <AuthModal isOpen={true} onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
