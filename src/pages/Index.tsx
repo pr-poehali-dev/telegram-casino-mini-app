@@ -187,26 +187,31 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6 max-w-md">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl">🦆</span>
-            <h1 className="text-2xl font-bold gold-text-glow">DuckCasino</h1>
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl">🦆</span>
+              <h1 className="text-2xl font-bold gold-text-glow">DuckCasino</h1>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setShowAdminPrompt(true)}
+              className="text-muted-foreground hover:text-red-500"
+              title="Админ панель"
+            >
+              <Icon name="ShieldAlert" size={20} />
+            </Button>
           </div>
+          
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-lg gold-glow">
+            <div className="flex items-center gap-2 bg-card px-3 py-2 rounded-lg border border-primary/20">
+              <Icon name="User" className="text-muted-foreground" size={16} />
+              <span className="font-mono font-bold text-sm text-primary">{user?.id}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-lg gold-glow flex-1">
               <Icon name="Coins" className="text-primary" size={20} />
               <span className="font-semibold text-primary">{balance}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setShowAdminPrompt(true)}
-                className="text-muted-foreground hover:text-red-500"
-                title="Админ панель"
-              >
-                <Icon name="ShieldAlert" size={20} />
-              </Button>
             </div>
           </div>
         </div>
