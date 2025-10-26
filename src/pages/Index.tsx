@@ -11,6 +11,7 @@ import WalletTab from '@/components/casino/WalletTab';
 import AdminTab from '@/components/casino/AdminTab';
 import BottomNavigation from '@/components/casino/BottomNavigation';
 import BoxOpenDialog from '@/components/casino/BoxOpenDialog';
+import DailyBonusCard from '@/components/casino/DailyBonusCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { UpgradeItem, BoxType, boxes } from '@/components/casino/types';
@@ -323,6 +324,12 @@ const Index = () => {
             </Button>
           </div>
           
+          
+          <DailyBonusCard 
+            userId={user?.id || 0}
+            onBonusClaimed={(newBalance) => setBalance(newBalance)}
+          />
+
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 bg-card px-3 py-2 rounded-lg border border-primary/20">
               <Icon name="User" className="text-muted-foreground" size={16} />
