@@ -200,10 +200,10 @@ def handle_webhook(update_data: Dict[str, Any]) -> Dict[str, Any]:
     
     cur.execute(
         """
-        INSERT INTO t_p79007879_telegram_casino_mini.transactions (user_id, type, amount, description, created_at)
+        INSERT INTO transactions (telegram_id, amount, transaction_type, description, created_at)
         VALUES (%s, %s, %s, %s, %s)
         """,
-        (user_id, 'deposit', amount, 'Пополнение через Telegram Stars', datetime.now())
+        (telegram_id, amount, 'deposit', 'Пополнение через Telegram Stars', datetime.now())
     )
     
     conn.commit()

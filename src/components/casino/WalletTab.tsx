@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,15 +14,50 @@ interface WalletTabProps {
   userId: string | null;
 }
 
+interface Transaction {
+  id: number;
+  amount: number;
+  transaction_type: string;
+  description: string;
+  created_at: string;
+}
+
 const WalletTab = ({ balance, setBalance, telegramUserId, userId }: WalletTabProps) => {
   const { toast } = useToast();
   const [showDepositDialog, setShowDepositDialog] = useState(false);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [depositAmount, setDepositAmount] = useState('100');
   const [withdrawAmount, setWithdrawAmount] = useState('250');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const depositOptions = [100, 250, 500, 1000];
   const withdrawOptions = [250, 500, 1000];
+
+  useEffect(() => {
+    if (telegramUserId) {
+      fetchTransactions();
+    }
+  }, [telegramUserId]);
+
+  const fetchTransactions = async () => {
+    if (!telegramUserId) return;
+    
+    setLoadingTransactions(true);
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/b9dc9a58-b22c-4594-8623-4b760461d906?telegram_id=${telegramUserId}`
+      );
+      const data = await response.json();
+      if (data.success && data.transactions) {
+        setTransactions(data.transactions);
+      }
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
 
   const handleDeposit = async (amount: number) => {
     if (!telegramUserId) {
@@ -128,6 +163,69 @@ const WalletTab = ({ balance, setBalance, telegramUserId, userId }: WalletTabPro
             <p><strong className="text-foreground">Комиссия:</strong> Без комиссии</p>
           </div>
         </div>
+      </Card>
+
+      {/* Transaction History */}
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Icon name="History" className="text-primary" size={20} />
+          <h3 className="font-semibold">История транзакций</h3>
+        </div>
+
+        {loadingTransactions ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Icon name="Loader2" className="mx-auto animate-spin mb-2" size={24} />
+            <p className="text-sm">Загрузка...</p>
+          </div>
+        ) : transactions.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Icon name="Receipt" className="mx-auto mb-2 opacity-50" size={32} />
+            <p className="text-sm">Пока нет транзакций</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {transactions.map((tx) => (
+              <div
+                key={tx.id}
+                className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-primary/10"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${
+                    tx.transaction_type === 'deposit' 
+                      ? 'bg-green-500/20 text-green-500' 
+                      : tx.transaction_type === 'withdraw'
+                      ? 'bg-blue-500/20 text-blue-500'
+                      : 'bg-red-500/20 text-red-500'
+                  }`}>
+                    <Icon 
+                      name={tx.transaction_type === 'deposit' ? 'ArrowDownToLine' : tx.transaction_type === 'withdraw' ? 'ArrowUpFromLine' : 'Gamepad2'} 
+                      size={16} 
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{tx.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(tx.created_at).toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className={`font-bold ${
+                  tx.transaction_type === 'deposit' 
+                    ? 'text-green-500' 
+                    : 'text-red-500'
+                }`}>
+                  {tx.transaction_type === 'deposit' ? '+' : '-'}{Math.abs(tx.amount)} ⭐
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* Deposit Dialog */}
