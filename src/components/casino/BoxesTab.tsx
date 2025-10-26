@@ -72,8 +72,8 @@ const BoxesTab = ({ balance, onOpenBox, lastFreeOpen, timeUntilFree }: BoxesTabP
           <Icon name="Info" className="text-primary mt-1" size={20} />
           <div className="space-y-1 text-sm text-muted-foreground">
             <p><strong className="text-foreground">Бесплатный бокс:</strong> Один раз в 24 часа</p>
-            <p><strong className="text-foreground">Окупаемость:</strong> В среднем 25% от стоимости бокса</p>
-            <p><strong className="text-foreground">Призы:</strong> Добавляются в инвентарь автоматически</p>
+            <p><strong className="text-foreground">Окупаемость:</strong> В среднем 90% от стоимости бокса</p>
+            <p><strong className="text-foreground">Шанс джекпота:</strong> 15% на крупный приз</p>
           </div>
         </div>
       </Card>

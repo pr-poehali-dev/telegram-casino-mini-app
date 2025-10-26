@@ -29,7 +29,7 @@ export const boxes: BoxType[] = [
     name: 'Бесплатный Бокс', 
     price: 0, 
     minPrize: 1, 
-    maxPrize: 12,
+    maxPrize: 15,
     emoji: '🎁', 
     isFree: true 
   },
@@ -37,8 +37,8 @@ export const boxes: BoxType[] = [
     id: 2, 
     name: 'Серебряный Бокс', 
     price: 25, 
-    minPrize: 5, 
-    maxPrize: 30,
+    minPrize: 10, 
+    maxPrize: 45,
     emoji: '🥈', 
     isFree: false 
   },
@@ -46,8 +46,8 @@ export const boxes: BoxType[] = [
     id: 3, 
     name: 'Золотой Бокс', 
     price: 50, 
-    minPrize: 10, 
-    maxPrize: 62,
+    minPrize: 20, 
+    maxPrize: 90,
     emoji: '🥇', 
     isFree: false 
   },
@@ -55,8 +55,8 @@ export const boxes: BoxType[] = [
     id: 4, 
     name: 'Платиновый Бокс', 
     price: 100, 
-    minPrize: 20, 
-    maxPrize: 125,
+    minPrize: 40, 
+    maxPrize: 180,
     emoji: '💎', 
     isFree: false 
   },

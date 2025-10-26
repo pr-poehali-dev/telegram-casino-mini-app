@@ -172,12 +172,21 @@ const Index = () => {
       setBalance(balance - box.price);
     }
 
-    const prize = Math.floor(Math.random() * (box.maxPrize - box.minPrize + 1)) + box.minPrize;
+    const targetPayout = box.price * 0.9;
+    const chanceGoodPrize = Math.random() < 0.15;
     
-    const rarities: Array<'common' | 'rare' | 'epic' | 'legendary'> = ['common', 'rare', 'epic', 'legendary'];
-    const rarity = prize > box.maxPrize * 0.8 ? 'legendary' : 
-                   prize > box.maxPrize * 0.6 ? 'epic' : 
-                   prize > box.maxPrize * 0.4 ? 'rare' : 'common';
+    let prize: number;
+    if (chanceGoodPrize) {
+      prize = Math.floor(box.maxPrize * 0.7 + Math.random() * (box.maxPrize * 0.3));
+    } else {
+      const minRange = box.minPrize;
+      const maxRange = Math.min(targetPayout * 1.2, box.maxPrize * 0.6);
+      prize = Math.floor(minRange + Math.random() * (maxRange - minRange + 1));
+    }
+    
+    const rarity = prize > box.maxPrize * 0.75 ? 'legendary' : 
+                   prize > box.maxPrize * 0.55 ? 'epic' : 
+                   prize > box.maxPrize * 0.35 ? 'rare' : 'common';
     
     const newItem: UpgradeItem = {
       id: Date.now(),
