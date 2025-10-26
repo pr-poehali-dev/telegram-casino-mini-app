@@ -143,7 +143,7 @@ const Index = () => {
 
 
 
-  const openBox = (box: BoxType) => {
+  const openBox = async (box: BoxType) => {
     if (!isTelegramUser) {
       alert('❌ Эта функция доступна только в Telegram!');
       return;
@@ -154,6 +154,28 @@ const Index = () => {
       if (!canOpen) {
         alert('⏰ Бесплатный бокс будет доступен через: ' + timeUntilFree);
         return;
+      }
+      
+      // Проверка подписки на канал
+      if (telegramUserId) {
+        try {
+          setIsCheckingSubscription(true);
+          const response = await fetch(`${CHECK_SUBSCRIPTION_URL}?user_id=${telegramUserId}&action=check_subscription`);
+          const data = await response.json();
+          
+          if (!data.subscribed) {
+            setShowSubscribeDialog(true);
+            setIsCheckingSubscription(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Subscription check error:', error);
+          alert('❌ Ошибка проверки подписки. Попробуй позже.');
+          setIsCheckingSubscription(false);
+          return;
+        } finally {
+          setIsCheckingSubscription(false);
+        }
       }
       
       setLastFreeOpen(Date.now());
