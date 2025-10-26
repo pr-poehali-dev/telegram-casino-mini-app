@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { BoxType, UpgradeItem } from './types';
+import { playSpinSound, playWinSound } from '@/utils/sounds';
 
 interface BoxOpenDialogProps {
   isOpen: boolean;
@@ -32,15 +33,25 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
       setIsAnimating(true);
       setRotationDeg(0);
       
+      playSpinSound();
+      
       setTimeout(() => {
         const targetRotation = (winIndex * 100) + 50 + 3600;
         setRotationDeg(targetRotation);
       }, 100);
       
+      const winTimer = setTimeout(() => {
+        playWinSound();
+      }, 3500);
+      
       const timer = setTimeout(() => {
         setIsAnimating(false);
       }, 4000);
-      return () => clearTimeout(timer);
+      
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(winTimer);
+      };
     }
   }, [isOpen, wonItem, box]);
 
