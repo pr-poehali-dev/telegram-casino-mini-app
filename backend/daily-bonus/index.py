@@ -60,7 +60,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         can_claim = True
         streak_days = 0
         total_claims = 0
-        next_bonus = 100
+        next_bonus = 5
         
         if bonus_row:
             last_claim = bonus_row[0]
@@ -71,11 +71,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 can_claim = False
             elif last_claim == today - timedelta(days=1):
                 # Streak продолжается
-                next_bonus = min(100 + (streak_days * 50), 500)
+                next_bonus = 5 + (streak_days * 5)
             else:
                 # Streak сброшен
                 streak_days = 0
-                next_bonus = 100
+                next_bonus = 5
         
         cursor.close()
         conn.close()
@@ -135,7 +135,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             else:
                 new_streak = 1
             
-            bonus_amount = min(100 + ((new_streak - 1) * 50), 500)
+            bonus_amount = 5 + ((new_streak - 1) * 5)
             
             # Обновляем запись
             cursor.execute(f"""
@@ -146,7 +146,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         else:
             # Создаём новую запись
             new_streak = 1
-            bonus_amount = 100
+            bonus_amount = 5
             
             cursor.execute(f"""
                 INSERT INTO t_p79007879_telegram_casino_mini.daily_bonuses (user_id, last_claim_date, streak_days, total_claims)

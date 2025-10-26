@@ -124,7 +124,7 @@ const DailyBonusCard = ({ userId, onBonusClaimed }: DailyBonusCardProps) => {
 
         <div className="text-xs text-muted-foreground text-center">
           {canClaim ? (
-            <>Заходи каждый день и получай до 500 ⭐!</>
+            <>Заходи каждый день и получай всё больше звёзд!</>
           ) : (
             <>Приходи завтра за новым бонусом!</>
           )}
@@ -134,11 +134,9 @@ const DailyBonusCard = ({ userId, onBonusClaimed }: DailyBonusCardProps) => {
           <div className="bg-card/50 p-2 rounded text-xs text-center">
             <span className="text-muted-foreground">Серия: </span>
             <span className="font-bold text-yellow-500">{streakDays} {streakDays === 1 ? 'день' : 'дней'} подряд</span>
-            {streakDays < 8 && (
-              <p className="text-muted-foreground mt-1">
-                Следующий бонус: +{Math.min(100 + (streakDays * 50), 500)} ⭐
-              </p>
-            )}
+            <p className="text-muted-foreground mt-1">
+              Следующий бонус: +{5 + (streakDays * 5)} ⭐
+            </p>
           </div>
         )}
       </div>
