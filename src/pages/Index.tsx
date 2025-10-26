@@ -39,18 +39,13 @@ const Index = () => {
 
   useEffect(() => {
     const initTelegramAuth = async () => {
-      console.log('Checking Telegram WebApp...');
-      
       if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
         const tg = (window as any).Telegram.WebApp;
         tg.ready();
         tg.expand();
         
-        console.log('Telegram WebApp initialized:', tg.initDataUnsafe);
-        
         if (tg.initDataUnsafe?.user) {
           const telegramUser = tg.initDataUnsafe.user;
-          console.log('Telegram user found:', telegramUser);
           setTelegramUserId(telegramUser.id);
           
           try {
@@ -68,9 +63,7 @@ const Index = () => {
               }),
             });
             
-            console.log('Auth response status:', response.status);
             const data = await response.json();
-            console.log('Auth data:', data);
             
             if (data.user) {
               setUser(data.user);
@@ -83,10 +76,36 @@ const Index = () => {
             console.error('Auth error:', error);
           }
         } else {
-          console.warn('No Telegram user data found');
+          // Если открыто не из Telegram - создаём тестового пользователя
+          const testUserId = Math.floor(Math.random() * 1000000);
+          try {
+            const response = await fetch('https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                telegram_id: testUserId,
+                username: 'test_user',
+                first_name: 'Гость',
+                last_name: '',
+                photo_url: '',
+              }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.user) {
+              setUser(data.user);
+              setBalance(data.user.balance);
+              setInventory(data.inventory || []);
+              setLastFreeOpen(data.last_free_open ? new Date(data.last_free_open).getTime() : null);
+              setIsAuthenticated(true);
+            }
+          } catch (error) {
+            console.error('Test user auth error:', error);
+          }
         }
-      } else {
-        console.warn('Telegram WebApp not available');
       }
     };
     
