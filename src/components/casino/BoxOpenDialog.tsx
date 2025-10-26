@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { BoxType, UpgradeItem } from './types';
+import { playButtonSound } from '@/utils/sounds';
 
 interface BoxOpenDialogProps {
   isOpen: boolean;
@@ -18,29 +19,36 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
     if (isOpen && wonItem && box) {
       setPhase('shake');
       
-      // Вибрация при начале
-      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-        (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-      }
-      
-      // Звук тряски бокса
-      const shakeSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMXGx8jJysvMzc7P0NHS09TV1tfY2drb3N3e3+Dh4uPk5ebn6Onq6+zt7u/w8fLz9PX29/j5+vv8/f7/AAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8=');
-      shakeSound.volume = 0.3;
-      shakeSound.play().catch(() => {});
+      // Звук тряски бокса - барабанная дробь
+      const shakeSound = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 1.5);
       
       // Через 1.5 сек открываем бокс
       setTimeout(() => {
         setPhase('open');
         
-        // Вибрация при открытии
-        if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-          (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
-        }
-        
-        // Звук открытия
-        const openSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8=');
-        openSound.volume = 0.4;
-        openSound.play().catch(() => {});
+        // Звук открытия - "вжух"
+        const openOsc = audioContext.createOscillator();
+        const openGain = audioContext.createGain();
+        openOsc.connect(openGain);
+        openGain.connect(audioContext.destination);
+        openOsc.type = 'sine';
+        openOsc.frequency.setValueAtTime(400, audioContext.currentTime);
+        openOsc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+        openGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        openGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        openOsc.start();
+        openOsc.stop(audioContext.currentTime + 0.2);
       }, 1500);
       
       // Через 2 сек показываем приз с конфетти
@@ -60,25 +68,48 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
         }
         setParticles(newParticles);
         
-        // Вибрация при победе (зависит от редкости)
-        if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-          const haptic = (window as any).Telegram.WebApp.HapticFeedback;
-          if (wonItem.rarity === 'legendary') {
-            haptic.notificationOccurred('success');
-            setTimeout(() => haptic.impactOccurred('heavy'), 100);
-            setTimeout(() => haptic.impactOccurred('heavy'), 200);
-          } else if (wonItem.rarity === 'epic') {
-            haptic.notificationOccurred('success');
-            setTimeout(() => haptic.impactOccurred('medium'), 100);
-          } else {
-            haptic.notificationOccurred('success');
-          }
+        // Звук победы зависит от редкости
+        if (wonItem.rarity === 'legendary') {
+          // Легендарный - эпический фанфар
+          [440, 554, 659, 880].forEach((freq, i) => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.15, audioContext.currentTime + i * 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.5);
+            osc.start(audioContext.currentTime + i * 0.15);
+            osc.stop(audioContext.currentTime + i * 0.15 + 0.5);
+          });
+        } else if (wonItem.rarity === 'epic') {
+          // Эпик - красивый аккорд
+          [523, 659, 784].forEach((freq) => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.8);
+          });
+        } else {
+          // Обычный - простой колокольчик
+          const winOsc = audioContext.createOscillator();
+          const winGain = audioContext.createGain();
+          winOsc.connect(winGain);
+          winGain.connect(audioContext.destination);
+          winOsc.type = 'sine';
+          winOsc.frequency.value = 800;
+          winGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+          winGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          winOsc.start();
+          winOsc.stop(audioContext.currentTime + 0.5);
         }
-        
-        // Звук победы
-        const winSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAAD/+/f08Onk4Nza1dHMx8K+ubWwrKilop+bl5SQjYmGg4B9enZzb2xpZWJeW1hUUU5LSEc/PDs4NTIvLCkl');
-        winSound.volume = 0.5;
-        winSound.play().catch(() => {});
       }, 2000);
     }
   }, [isOpen, wonItem, box]);
@@ -172,7 +203,10 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
 
         {phase === 'reveal' && (
           <Button 
-            onClick={onClose} 
+            onClick={() => {
+              playButtonSound();
+              onClose();
+            }}
             className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-lg font-bold shadow-lg" 
             size="lg"
           >

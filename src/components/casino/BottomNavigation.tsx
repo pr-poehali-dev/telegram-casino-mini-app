@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { playButtonSound } from '@/utils/sounds';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -14,7 +15,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'boxes' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('boxes')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('boxes');
+            }}
           >
             <Icon name="Package" size={18} />
             <span className="text-xs">Боксы</span>
@@ -22,7 +26,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'miner' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('miner')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('miner');
+            }}
           >
             <span className="text-lg">💣</span>
             <span className="text-xs">Минёр</span>
@@ -30,7 +37,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'upgrade' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('upgrade')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('upgrade');
+            }}
           >
             <Icon name="ArrowUpCircle" size={18} />
             <span className="text-xs">Улучш.</span>
@@ -38,7 +48,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'wallet' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('wallet')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('wallet');
+            }}
           >
             <Icon name="Wallet" size={18} />
             <span className="text-xs">Кошелёк</span>
@@ -46,7 +59,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'inventory' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('inventory')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('inventory');
+            }}
           >
             <Icon name="Backpack" size={18} />
             <span className="text-xs">Инвент.</span>
@@ -54,7 +70,10 @@ const BottomNavigation = ({ activeTab, setActiveTab }: BottomNavigationProps) =>
           <Button
             variant="ghost"
             className={`flex-col h-auto gap-1 py-2 ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={() => setActiveTab('profile')}
+            onClick={() => {
+              playButtonSound();
+              setActiveTab('profile');
+            }}
           >
             <Icon name="User" size={18} />
             <span className="text-xs">Профиль</span>

@@ -40,3 +40,16 @@ export const playWinSound = () => {
 export const playClickSound = () => {
   playSound(800, 0.05, 'square', 0.1);
 };
+
+export const playButtonSound = () => {
+  playSound(600, 0.08, 'sine', 0.12);
+};
+
+export const playSuccessSound = () => {
+  playSound(523, 0.15, 'sine', 0.2);
+  setTimeout(() => playSound(659, 0.2, 'sine', 0.15), 100);
+};
+
+export const playErrorSound = () => {
+  playSound(200, 0.2, 'sawtooth', 0.15);
+};

@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import { TabsContent } from '@/components/ui/tabs';
 import { UpgradeItem, rarityColors } from './types';
 import { useState } from 'react';
+import { playButtonSound } from '@/utils/sounds';
 
 interface UpgradeTabProps {
   inventory: UpgradeItem[];
@@ -55,7 +56,10 @@ const UpgradeTab = ({
                   <Card
                     key={item.id}
                     className={`bg-gradient-to-r ${rarityColors[item.rarity]} p-3 cursor-pointer hover:scale-105 transition-transform`}
-                    onClick={() => setUpgradeFrom(item)}
+                    onClick={() => {
+                      playButtonSound();
+                      setUpgradeFrom(item);
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold">{item.name}</span>
@@ -112,13 +116,19 @@ const UpgradeTab = ({
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => setUpgradeFrom(null)}
+                onClick={() => {
+                  playButtonSound();
+                  setUpgradeFrom(null);
+                }}
               >
                 Отмена
               </Button>
               <Button
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                onClick={() => performUpgrade(multiplier)}
+                onClick={() => {
+                  playButtonSound();
+                  performUpgrade(multiplier);
+                }}
               >
                 Улучшить
               </Button>

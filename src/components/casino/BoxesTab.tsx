@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { BoxType, boxes } from './types';
+import { playButtonSound } from '@/utils/sounds';
 
 interface BoxesTabProps {
   balance: number;
@@ -54,7 +55,10 @@ const BoxesTab = ({ balance, onOpenBox, lastFreeOpen, timeUntilFree }: BoxesTabP
                 </div>
 
                 <Button
-                  onClick={() => onOpenBox(box)}
+                  onClick={() => {
+                    playButtonSound();
+                    onOpenBox(box);
+                  }}
                   disabled={isDisabled}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
