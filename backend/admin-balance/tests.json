@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "Test missing telegram_id",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "amount": 100
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "telegram_id and amount are required"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test missing amount",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "telegram_id": 123456789
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "telegram_id and amount are required"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -10,12 +10,13 @@ interface AdminTabProps {
 }
 
 const AdminTab = ({ onClose }: AdminTabProps) => {
-  const [userId, setUserId] = useState('');
+  const [telegramId, setTelegramId] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const updateBalance = (operation: 'add' | 'remove') => {
-    if (!userId || !amount) {
+  const updateBalance = async (operation: 'add' | 'remove') => {
+    if (!telegramId || !amount) {
       setMessage('❌ Заполни все поля');
       return;
     }
@@ -26,44 +27,37 @@ const AdminTab = ({ onClose }: AdminTabProps) => {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-    let userFound = false;
-    let userEmail = '';
+    setIsLoading(true);
+    setMessage('');
 
-    for (const email in users) {
-      if (users[email].id === userId) {
-        userFound = true;
-        userEmail = email;
-        break;
+    try {
+      const response = await fetch('https://functions.poehali.dev/1c5c02b0-3e38-43f5-ac84-22b7995d4751', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          telegram_id: parseInt(telegramId),
+          amount: operation === 'add' ? amountNum : -amountNum,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const operationText = operation === 'add' ? 'добавлено' : 'снято';
+        setMessage(`✅ ${amountNum}⭐ ${operationText} пользователю TG ID: ${telegramId}`);
+        setTelegramId('');
+        setAmount('');
+        setTimeout(() => setMessage(''), 5000);
+      } else {
+        setMessage(`❌ ${data.error || 'Ошибка при изменении баланса'}`);
       }
+    } catch (error) {
+      setMessage('❌ Ошибка сети. Проверь подключение');
+    } finally {
+      setIsLoading(false);
     }
-
-    if (!userFound) {
-      setMessage('❌ Игрок с таким ID не найден');
-      return;
-    }
-
-    const currentBalance = users[userEmail].balance || 0;
-    const newBalance = operation === 'add' 
-      ? currentBalance + amountNum 
-      : Math.max(0, currentBalance - amountNum);
-
-    users[userEmail].balance = newBalance;
-    localStorage.setItem('users', JSON.stringify(users));
-
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (currentUser.id === userId) {
-      currentUser.balance = newBalance;
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-      window.location.reload();
-    }
-
-    const operationText = operation === 'add' ? 'добавлено' : 'снято';
-    setMessage(`✅ ${amountNum}⭐ ${operationText} игроку ${userId}`);
-    setUserId('');
-    setAmount('');
-
-    setTimeout(() => setMessage(''), 5000);
   };
 
   return (
@@ -96,11 +90,12 @@ const AdminTab = ({ onClose }: AdminTabProps) => {
           )}
 
           <div>
-            <label className="text-sm font-semibold mb-2 block">ID игрока</label>
+            <label className="text-sm font-semibold mb-2 block">Telegram ID</label>
             <Input
-              placeholder="#1000"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              placeholder="123456789"
+              type="number"
+              value={telegramId}
+              onChange={(e) => setTelegramId(e.target.value)}
               className="bg-secondary/50 font-mono text-lg"
             />
           </div>
@@ -120,18 +115,28 @@ const AdminTab = ({ onClose }: AdminTabProps) => {
           <div className="grid grid-cols-2 gap-3">
             <Button
               onClick={() => updateBalance('add')}
+              disabled={isLoading}
               className="bg-green-600 hover:bg-green-700"
               size="lg"
             >
-              <Icon name="Plus" size={20} className="mr-2" />
+              {isLoading ? (
+                <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+              ) : (
+                <Icon name="Plus" size={20} className="mr-2" />
+              )}
               Выдать
             </Button>
             <Button
               onClick={() => updateBalance('remove')}
+              disabled={isLoading}
               className="bg-red-600 hover:bg-red-700"
               size="lg"
             >
-              <Icon name="Minus" size={20} className="mr-2" />
+              {isLoading ? (
+                <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+              ) : (
+                <Icon name="Minus" size={20} className="mr-2" />
+              )}
               Снять
             </Button>
           </div>
