@@ -39,13 +39,18 @@ const Index = () => {
 
   useEffect(() => {
     const initTelegramAuth = async () => {
+      console.log('Checking Telegram WebApp...');
+      
       if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
         const tg = (window as any).Telegram.WebApp;
         tg.ready();
         tg.expand();
         
+        console.log('Telegram WebApp initialized:', tg.initDataUnsafe);
+        
         if (tg.initDataUnsafe?.user) {
           const telegramUser = tg.initDataUnsafe.user;
+          console.log('Telegram user found:', telegramUser);
           setTelegramUserId(telegramUser.id);
           
           try {
@@ -59,10 +64,13 @@ const Index = () => {
                 username: telegramUser.username || '',
                 first_name: telegramUser.first_name || '',
                 last_name: telegramUser.last_name || '',
+                photo_url: telegramUser.photo_url || '',
               }),
             });
             
+            console.log('Auth response status:', response.status);
             const data = await response.json();
+            console.log('Auth data:', data);
             
             if (data.user) {
               setUser(data.user);
@@ -74,7 +82,11 @@ const Index = () => {
           } catch (error) {
             console.error('Auth error:', error);
           }
+        } else {
+          console.warn('No Telegram user data found');
         }
+      } else {
+        console.warn('Telegram WebApp not available');
       }
     };
     

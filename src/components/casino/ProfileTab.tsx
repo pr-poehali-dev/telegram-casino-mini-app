@@ -36,14 +36,27 @@ const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => 
         </div>
 
         <div className="space-y-4">
-          <div className="bg-card p-4 rounded-lg">
-            <span className="text-sm text-muted-foreground">Имя</span>
-            <p className="font-semibold text-lg">
-              {user.first_name} {user.last_name}
-            </p>
-            {user.username && (
-              <p className="text-sm text-muted-foreground mt-1">@{user.username}</p>
+          <div className="bg-card p-4 rounded-lg flex items-center gap-4">
+            {user.photo_url ? (
+              <img 
+                src={user.photo_url} 
+                alt="Avatar" 
+                className="w-16 h-16 rounded-full border-2 border-primary/30"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
+                <Icon name="User" className="text-primary" size={32} />
+              </div>
             )}
+            <div className="flex-1">
+              <span className="text-sm text-muted-foreground">Имя</span>
+              <p className="font-semibold text-lg">
+                {user.first_name} {user.last_name}
+              </p>
+              {user.username && (
+                <p className="text-sm text-muted-foreground mt-1">@{user.username}</p>
+              )}
+            </div>
           </div>
 
           <div className="bg-card p-4 rounded-lg">

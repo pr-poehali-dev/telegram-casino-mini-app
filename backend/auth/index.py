@@ -39,6 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     username = body_data.get('username', '')
     first_name = body_data.get('first_name', '')
     last_name = body_data.get('last_name', '')
+    photo_url = body_data.get('photo_url', '')
     
     if not telegram_id:
         return {
@@ -60,7 +61,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(database_url)
     cursor = conn.cursor()
     
-    cursor.execute(f"SELECT id, telegram_id, username, first_name, last_name, balance FROM t_p79007879_telegram_casino_mini.users WHERE telegram_id = {telegram_id}")
+    cursor.execute(f"SELECT id, telegram_id, username, first_name, last_name, balance, photo_url FROM t_p79007879_telegram_casino_mini.users WHERE telegram_id = {telegram_id}")
     existing_user = cursor.fetchone()
     
     if existing_user:
@@ -89,7 +90,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'username': existing_user[2],
                     'first_name': existing_user[3],
                     'last_name': existing_user[4],
-                    'balance': existing_user[5]
+                    'balance': existing_user[5],
+                    'photo_url': existing_user[6]
                 },
                 'inventory': inventory,
                 'last_free_open': last_free_open,
@@ -101,9 +103,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         username_escaped = username.replace("'", "''")
         first_name_escaped = first_name.replace("'", "''")
         last_name_escaped = last_name.replace("'", "''")
+        photo_url_escaped = photo_url.replace("'", "''")
         
         cursor.execute(
-            f"INSERT INTO t_p79007879_telegram_casino_mini.users (telegram_id, username, first_name, last_name) VALUES ({telegram_id}, '{username_escaped}', '{first_name_escaped}', '{last_name_escaped}') RETURNING id, balance"
+            f"INSERT INTO t_p79007879_telegram_casino_mini.users (telegram_id, username, first_name, last_name, photo_url) VALUES ({telegram_id}, '{username_escaped}', '{first_name_escaped}', '{last_name_escaped}', '{photo_url_escaped}') RETURNING id, balance"
         )
         new_user = cursor.fetchone()
         user_id = new_user[0]
@@ -122,7 +125,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'username': username,
                     'first_name': first_name,
                     'last_name': last_name,
-                    'balance': balance
+                    'balance': balance,
+                    'photo_url': photo_url
                 },
                 'inventory': [],
                 'last_free_open': None,
