@@ -156,13 +156,6 @@ const Index = () => {
         return;
       }
       
-      // Check subscription
-      const hasSubscribed = localStorage.getItem('subscribed_to_channel');
-      if (!hasSubscribed) {
-        setShowSubscribeDialog(true);
-        return;
-      }
-      
       setLastFreeOpen(Date.now());
     } else {
       if (balance < box.price) {

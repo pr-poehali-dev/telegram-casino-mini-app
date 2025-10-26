@@ -63,8 +63,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             streak_days = user[1] or 0
             can_claim = True
             if last_bonus:
-                last_bonus_date = last_bonus.date() if hasattr(last_bonus, 'date') else last_bonus
-                can_claim = last_bonus_date < datetime.now().date()
+                hours_passed = (datetime.now() - last_bonus).total_seconds() / 3600
+                can_claim = hours_passed >= 24
             
             next_bonus = 5 + (streak_days * 5)
             return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'isBase64Encoded': False, 'body': json.dumps({'can_claim': can_claim, 'streak_days': streak_days, 'next_bonus': next_bonus})}
@@ -108,24 +108,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {'statusCode': 404, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'User not found'}), 'isBase64Encoded': False}
         
         user_id_db, current_balance, last_bonus, streak_days, telegram_id = user[0], user[1], user[2], user[3] or 0, user[4]
-        today = datetime.now().date()
+        now = datetime.now()
         
         if last_bonus:
-            last_bonus_date = last_bonus.date() if hasattr(last_bonus, 'date') else last_bonus
-            if last_bonus_date >= today:
+            hours_passed = (now - last_bonus).total_seconds() / 3600
+            if hours_passed < 24:
                 cur.close()
                 conn.close()
-                return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Bonus already claimed today'}), 'isBase64Encoded': False}
+                return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Bonus already claimed in last 24 hours'}), 'isBase64Encoded': False}
             
-            yesterday = today - timedelta(days=1)
-            streak_days = streak_days + 1 if last_bonus_date == yesterday else 1
+            if hours_passed <= 48:
+                streak_days = streak_days + 1
+            else:
+                streak_days = 1
         else:
             streak_days = 1
         
         bonus_amount = 5 + ((streak_days - 1) * 5)
         new_balance = current_balance + bonus_amount
         
-        cur.execute("UPDATE t_p79007879_telegram_casino_mini.users SET balance = %s, last_daily_bonus = %s, daily_streak = %s WHERE id = %s", (new_balance, datetime.now(), streak_days, user_id_db))
+        cur.execute("UPDATE t_p79007879_telegram_casino_mini.users SET balance = %s, last_daily_bonus = %s, daily_streak = %s WHERE id = %s", (new_balance, now, streak_days, user_id_db))
         cur.execute("INSERT INTO transactions (telegram_id, amount, transaction_type, description) VALUES (%s, %s, %s, %s)", (telegram_id, bonus_amount, 'daily_bonus', f'Ежедневный бонус (день {streak_days})'))
         
         conn.commit()
