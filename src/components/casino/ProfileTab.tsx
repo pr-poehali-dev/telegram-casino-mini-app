@@ -12,8 +12,8 @@ interface ProfileTabProps {
 
 const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => {
   const copyId = () => {
-    navigator.clipboard.writeText(user.id);
-    alert('✅ ID скопирован!');
+    navigator.clipboard.writeText(user.telegram_id.toString());
+    alert('✅ Telegram ID скопирован!');
   };
 
   return (
@@ -37,8 +37,18 @@ const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => 
 
         <div className="space-y-4">
           <div className="bg-card p-4 rounded-lg">
+            <span className="text-sm text-muted-foreground">Имя</span>
+            <p className="font-semibold text-lg">
+              {user.first_name} {user.last_name}
+            </p>
+            {user.username && (
+              <p className="text-sm text-muted-foreground mt-1">@{user.username}</p>
+            )}
+          </div>
+
+          <div className="bg-card p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">ID игрока</span>
+              <span className="text-sm text-muted-foreground">Telegram ID</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -48,12 +58,7 @@ const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => 
                 <Icon name="Copy" size={16} />
               </Button>
             </div>
-            <p className="font-mono font-bold text-primary text-2xl">{user.id}</p>
-          </div>
-
-          <div className="bg-card p-4 rounded-lg">
-            <span className="text-sm text-muted-foreground">Email</span>
-            <p className="font-semibold">{user.email}</p>
+            <p className="font-mono font-bold text-primary text-xl">{user.telegram_id}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -74,7 +79,7 @@ const ProfileTab = ({ user, balance, inventory, onLogout }: ProfileTabProps) => 
             <div className="flex items-start gap-3">
               <Icon name="Info" className="text-primary mt-1" size={20} />
               <div className="space-y-1 text-sm">
-                <p className="font-semibold text-primary">Твой уникальный ID</p>
+                <p className="font-semibold text-primary">Твой Telegram ID</p>
                 <p className="text-muted-foreground">
                   Используй его для получения бонусов от администратора
                 </p>
