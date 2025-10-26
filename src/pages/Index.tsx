@@ -34,7 +34,7 @@ const Index = () => {
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [telegramUserId, setTelegramUserId] = useState<number | null>(null);
   const [isTelegramUser, setIsTelegramUser] = useState(false);
-  const BOT_USERNAME = 'DuckCasinoMiniBot'; // Замени на свой username бота
+  const BOT_USERNAME = 'duckcasino_robot';
   const ADMIN_PASSWORD = 'admin2025';
   const CHANNEL_URL = 'https://t.me/tgDuckCasino';
   const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f';
