@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Handle successful payment webhook",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "message": {
+          "successful_payment": {
+            "invoice_payload": "{\"user_id\": \"test-user\", \"stars\": 50}"
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "ok": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

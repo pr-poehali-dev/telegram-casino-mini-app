@@ -378,6 +378,8 @@ const Index = () => {
           <WalletTab
             balance={balance}
             setBalance={setBalance}
+            telegramUserId={telegramUserId}
+            userId={user?.id || null}
           />
 
           <ProfileTab

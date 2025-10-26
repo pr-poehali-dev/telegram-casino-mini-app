@@ -9,9 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 interface WalletTabProps {
   balance: number;
   setBalance: (balance: number) => void;
+  telegramUserId: number | null;
+  userId: string | null;
 }
 
-const WalletTab = ({ balance, setBalance }: WalletTabProps) => {
+const WalletTab = ({ balance, setBalance, telegramUserId, userId }: WalletTabProps) => {
+  const { toast } = useToast();
   const [showDepositDialog, setShowDepositDialog] = useState(false);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [depositAmount, setDepositAmount] = useState('100');
@@ -20,10 +23,52 @@ const WalletTab = ({ balance, setBalance }: WalletTabProps) => {
   const depositOptions = [100, 250, 500, 1000];
   const withdrawOptions = [250, 500, 1000];
 
-  const handleDeposit = (amount: number) => {
-    // TODO: Integrate with Telegram Stars payment
-    alert(`💳 Пополнение на ${amount}⭐ в разработке...`);
-    setShowDepositDialog(false);
+  const handleDeposit = async (amount: number) => {
+    if (!telegramUserId) {
+      toast({
+        title: '❌ Ошибка',
+        description: 'Пополнение доступно только в Telegram Mini App',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/telegram-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          telegram_id: telegramUserId,
+          stars_amount: amount,
+          user_id: userId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.invoice_link) {
+        window.open(data.invoice_link, '_blank');
+        toast({
+          title: '✅ Счёт создан',
+          description: 'Оплатите счёт в Telegram. Звёзды зачислятся автоматически!',
+        });
+        setShowDepositDialog(false);
+      } else {
+        toast({
+          title: '❌ Ошибка',
+          description: data.error || 'Не удалось создать счёт',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: '❌ Ошибка',
+        description: 'Не удалось создать счёт',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleWithdraw = (amount: number) => {
