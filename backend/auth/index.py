@@ -6,7 +6,7 @@ from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Авторизация и регистрация пользователей через Telegram
+    Business: Авторизация, регистрация и обновление данных пользователей
     Args: event - dict с httpMethod, body, queryStringParameters
           context - объект с request_id
     Returns: HTTP response с данными пользователя
@@ -18,11 +18,81 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-Telegram-User',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
+            'isBase64Encoded': False
+        }
+    
+    body_data = json.loads(event.get('body', '{}'))
+    
+    if method == 'PUT':
+        user_id = body_data.get('user_id')
+        balance = body_data.get('balance')
+        inventory = body_data.get('inventory')
+        last_free_open = body_data.get('last_free_open')
+        
+        if not user_id:
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'user_id is required'}),
+                'isBase64Encoded': False
+            }
+        
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            return {
+                'statusCode': 500,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Database not configured'}),
+                'isBase64Encoded': False
+            }
+        
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        if balance is not None:
+            cursor.execute(f"UPDATE t_p79007879_telegram_casino_mini.users SET balance = {balance} WHERE id = {user_id}")
+        
+        if inventory is not None:
+            cursor.execute(f"DELETE FROM t_p79007879_telegram_casino_mini.user_inventory WHERE user_id = {user_id}")
+            
+            for item in inventory:
+                item_name = item.get('name', '').replace("'", "''")
+                item_value = item.get('value', 0)
+                item_rarity = item.get('rarity', 'common').replace("'", "''")
+                cursor.execute(
+                    f"INSERT INTO t_p79007879_telegram_casino_mini.user_inventory (user_id, item_name, item_value, rarity) "
+                    f"VALUES ({user_id}, '{item_name}', {item_value}, '{item_rarity}')"
+                )
+        
+        if last_free_open is not None:
+            cursor.execute(f"SELECT user_id FROM t_p79007879_telegram_casino_mini.free_case_cooldowns WHERE user_id = {user_id}")
+            exists = cursor.fetchone()
+            
+            if exists:
+                cursor.execute(
+                    f"UPDATE t_p79007879_telegram_casino_mini.free_case_cooldowns "
+                    f"SET last_free_open = TO_TIMESTAMP({last_free_open / 1000.0}) "
+                    f"WHERE user_id = {user_id}"
+                )
+            else:
+                cursor.execute(
+                    f"INSERT INTO t_p79007879_telegram_casino_mini.free_case_cooldowns (user_id, last_free_open) "
+                    f"VALUES ({user_id}, TO_TIMESTAMP({last_free_open / 1000.0}))"
+                )
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'success': True}),
             'isBase64Encoded': False
         }
     
@@ -34,7 +104,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    body_data = json.loads(event.get('body', '{}'))
     telegram_id = body_data.get('telegram_id')
     username = body_data.get('username', '')
     first_name = body_data.get('first_name', '')

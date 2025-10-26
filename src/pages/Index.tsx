@@ -39,6 +39,47 @@ const Index = () => {
   const ADMIN_PASSWORD = 'admin2025';
   const CHANNEL_URL = 'https://t.me/tgDuckCasino';
   const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/2fb79ef5-b209-4028-8b76-aaf735a6c37c';
+  const AUTH_URL = 'https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a';
+
+  const saveUserData = async (updates: { balance?: number; inventory?: UpgradeItem[]; last_free_open?: number | null }) => {
+    if (!user?.id) return;
+    
+    try {
+      await fetch(AUTH_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          balance: updates.balance,
+          inventory: updates.inventory,
+          last_free_open: updates.last_free_open
+        })
+      });
+    } catch (error) {
+      console.error('Save error:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const timer = setTimeout(() => {
+      saveUserData({ balance });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [balance]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const timer = setTimeout(() => {
+      saveUserData({ inventory });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [inventory]);
+
+  useEffect(() => {
+    if (!user?.id || lastFreeOpen === null) return;
+    saveUserData({ last_free_open: lastFreeOpen });
+  }, [lastFreeOpen]);
 
   useEffect(() => {
     const initTelegramAuth = async () => {
