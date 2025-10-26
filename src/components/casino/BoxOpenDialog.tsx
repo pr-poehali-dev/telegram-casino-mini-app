@@ -18,6 +18,11 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
     if (isOpen && wonItem && box) {
       setPhase('shake');
       
+      // Вибрация при начале
+      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+        (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      }
+      
       // Звук тряски бокса
       const shakeSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMXGx8jJysvMzc7P0NHS09TV1tfY2drb3N3e3+Dh4uPk5ebn6Onq6+zt7u/w8fLz9PX29/j5+vv8/f7/AAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8=');
       shakeSound.volume = 0.3;
@@ -26,6 +31,11 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
       // Через 1.5 сек открываем бокс
       setTimeout(() => {
         setPhase('open');
+        
+        // Вибрация при открытии
+        if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+          (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+        }
         
         // Звук открытия
         const openSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpbXF1eX2BhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8=');
@@ -49,6 +59,21 @@ const BoxOpenDialog = ({ isOpen, box, wonItem, onClose }: BoxOpenDialogProps) =>
           });
         }
         setParticles(newParticles);
+        
+        // Вибрация при победе (зависит от редкости)
+        if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+          const haptic = (window as any).Telegram.WebApp.HapticFeedback;
+          if (wonItem.rarity === 'legendary') {
+            haptic.notificationOccurred('success');
+            setTimeout(() => haptic.impactOccurred('heavy'), 100);
+            setTimeout(() => haptic.impactOccurred('heavy'), 200);
+          } else if (wonItem.rarity === 'epic') {
+            haptic.notificationOccurred('success');
+            setTimeout(() => haptic.impactOccurred('medium'), 100);
+          } else {
+            haptic.notificationOccurred('success');
+          }
+        }
         
         // Звук победы
         const winSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAAD/+/f08Onk4Nza1dHMx8K+ubWwrKilop+bl5SQjYmGg4B9enZzb2xpZWJeW1hUUU5LSEc/PDs4NTIvLCkl');

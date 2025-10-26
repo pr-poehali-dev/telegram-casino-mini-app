@@ -228,15 +228,15 @@ const Index = () => {
       setBalance(balance - box.price);
     }
 
-    const targetPayout = box.price * 0.9;
-    const chanceGoodPrize = Math.random() < 0.15;
+    const targetPayout = box.price * 0.5;
+    const chanceGoodPrize = Math.random() < 0.10;
     
     let prize: number;
     if (chanceGoodPrize) {
-      prize = Math.floor(box.maxPrize * 0.7 + Math.random() * (box.maxPrize * 0.3));
+      prize = Math.floor(box.maxPrize * 0.6 + Math.random() * (box.maxPrize * 0.4));
     } else {
       const minRange = box.minPrize;
-      const maxRange = Math.min(targetPayout * 1.2, box.maxPrize * 0.6);
+      const maxRange = Math.min(targetPayout * 1.3, box.maxPrize * 0.5);
       prize = Math.floor(minRange + Math.random() * (maxRange - minRange + 1));
     }
     
