@@ -111,7 +111,6 @@ const Index = () => {
           }
         }
       }
-      }
     };
     
     initTelegramAuth();
