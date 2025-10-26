@@ -69,7 +69,7 @@ const Index = () => {
   }, [balance]);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !isAuthenticated) return;
     const timer = setTimeout(() => {
       saveUserData({ inventory });
     }, 1000);
@@ -116,7 +116,7 @@ const Index = () => {
               setUser(data.user);
               setBalance(data.user.balance);
               setInventory(data.inventory || []);
-              setLastFreeOpen(data.last_free_open ? new Date(data.last_free_open).getTime() : null);
+              setLastFreeOpen(data.last_free_open || null);
               setIsAuthenticated(true);
             }
           } catch (error) {
@@ -146,7 +146,7 @@ const Index = () => {
               setUser(data.user);
               setBalance(data.user.balance);
               setInventory(data.inventory || []);
-              setLastFreeOpen(data.last_free_open ? new Date(data.last_free_open).getTime() : null);
+              setLastFreeOpen(data.last_free_open || null);
               setIsAuthenticated(true);
               setIsTelegramUser(false);
             }
@@ -251,10 +251,13 @@ const Index = () => {
       rarity: rarity,
     };
     
-    setInventory([...inventory, newItem]);
     setSelectedBox(box);
     setWonItem(newItem);
     setIsBoxDialogOpen(true);
+    
+    setTimeout(() => {
+      setInventory([...inventory, newItem]);
+    }, 4500);
   };
 
   const performUpgrade = (multiplier: number) => {

@@ -142,9 +142,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         inventory_rows = cursor.fetchall()
         inventory = [{'name': row[0], 'value': row[1], 'rarity': row[2]} for row in inventory_rows]
         
-        cursor.execute(f"SELECT last_free_open FROM t_p79007879_telegram_casino_mini.free_case_cooldowns WHERE user_id = {user_id}")
+        cursor.execute(f"SELECT EXTRACT(EPOCH FROM last_free_open) * 1000 FROM t_p79007879_telegram_casino_mini.free_case_cooldowns WHERE user_id = {user_id}")
         cooldown_row = cursor.fetchone()
-        last_free_open = cooldown_row[0].isoformat() if cooldown_row else None
+        last_free_open = int(cooldown_row[0]) if cooldown_row and cooldown_row[0] else None
         
         cursor.close()
         conn.close()
