@@ -41,8 +41,10 @@ const Index = () => {
 
   useEffect(() => {
     const initTelegramAuth = async () => {
+      console.log('🦆 DuckCasino v2.0 - Telegram Auth Starting');
       if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
         const tg = (window as any).Telegram.WebApp;
+        console.log('📱 Telegram WebApp found:', tg);
         tg.ready();
         tg.expand();
         
