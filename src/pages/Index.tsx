@@ -38,7 +38,7 @@ const Index = () => {
   const BOT_USERNAME = 'duckcasino_robot';
   const ADMIN_PASSWORD = 'admin2025';
   const CHANNEL_URL = 'https://t.me/tgDuckCasino';
-  const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f';
+  const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/2fb79ef5-b209-4028-8b76-aaf735a6c37c';
 
   useEffect(() => {
     const initTelegramAuth = async () => {

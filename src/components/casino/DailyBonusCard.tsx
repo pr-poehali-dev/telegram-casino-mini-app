@@ -8,7 +8,7 @@ interface DailyBonusCardProps {
   onBonusClaimed: (newBalance: number) => void;
 }
 
-const DAILY_BONUS_URL = 'https://functions.poehali.dev/0f442a88-a419-4c31-a3a7-85dc47731e73';
+const CHECK_FUNCTION_URL = 'https://functions.poehali.dev/2fb79ef5-b209-4028-8b76-aaf735a6c37c';
 
 const DailyBonusCard = ({ userId, onBonusClaimed }: DailyBonusCardProps) => {
   const [canClaim, setCanClaim] = useState(false);
@@ -24,7 +24,7 @@ const DailyBonusCard = ({ userId, onBonusClaimed }: DailyBonusCardProps) => {
 
   const checkBonusStatus = async () => {
     try {
-      const response = await fetch(`${DAILY_BONUS_URL}?user_id=${userId}`);
+      const response = await fetch(`${CHECK_FUNCTION_URL}?user_id=${userId}&type=bonus`);
       const data = await response.json();
       
       setCanClaim(data.can_claim);
@@ -38,7 +38,7 @@ const DailyBonusCard = ({ userId, onBonusClaimed }: DailyBonusCardProps) => {
   const claimBonus = async () => {
     setIsClaiming(true);
     try {
-      const response = await fetch(DAILY_BONUS_URL, {
+      const response = await fetch(CHECK_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

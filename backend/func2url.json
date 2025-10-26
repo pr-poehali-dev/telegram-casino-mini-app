@@ -1,7 +1,7 @@
 {
+  "check-subscription": "https://functions.poehali.dev/2fb79ef5-b209-4028-8b76-aaf735a6c37c",
   "admin-balance": "https://functions.poehali.dev/1c5c02b0-3e38-43f5-ac84-22b7995d4751",
   "get-transactions": "https://functions.poehali.dev/b9dc9a58-b22c-4594-8623-4b760461d906",
   "create-payment": "https://functions.poehali.dev/4339581f-fb32-49cd-bc98-23a9ff43c699",
-  "email-auth": "https://functions.poehali.dev/bdc6396e-6e37-490c-8498-1a249b75d550",
   "auth": "https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a"
 }
