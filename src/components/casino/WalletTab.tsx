@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface WalletTabProps {
   balance: number;
@@ -34,21 +35,20 @@ const WalletTab = ({ balance, setBalance, telegramUserId, userId }: WalletTabPro
     }
 
     try {
-      const response = await fetch('https://functions.poehali.dev/telegram-payment', {
+      const response = await fetch('https://functions.poehali.dev/4339581f-fb32-49cd-bc98-23a9ff43c699', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           telegram_id: telegramUserId,
-          stars_amount: amount,
-          user_id: userId
+          amount: amount
         })
       });
 
       const data = await response.json();
 
-      if (data.invoice_link) {
+      if (data.success && data.invoice_link) {
         window.open(data.invoice_link, '_blank');
         toast({
           title: '✅ Счёт создан',

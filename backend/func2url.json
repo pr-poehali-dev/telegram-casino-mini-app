@@ -1,4 +1,5 @@
 {
+  "create-payment": "https://functions.poehali.dev/4339581f-fb32-49cd-bc98-23a9ff43c699",
   "daily-bonus": "https://functions.poehali.dev/0f442a88-a419-4c31-a3a7-85dc47731e73",
   "email-auth": "https://functions.poehali.dev/bdc6396e-6e37-490c-8498-1a249b75d550",
   "check-subscription": "https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f",
