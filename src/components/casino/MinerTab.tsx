@@ -41,8 +41,8 @@ const MinerTab = ({ balance, setBalance }: MinerTabProps) => {
     setBalance(balance - betAmount);
 
     const newGrid: Cell[] = [];
-    const mineCount = 19;
-    const plusCount = 3;
+    const mineCount = 15;
+    const plusCount = 5;
     const emptyCount = 25 - mineCount - plusCount;
 
     const types: CellType[] = [
@@ -152,7 +152,7 @@ const MinerTab = ({ balance, setBalance }: MinerTabProps) => {
             <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
               <div className="text-center">
                 <div>💣 Бомбы</div>
-                <div className="font-bold text-red-500">19 шт (75%)</div>
+                <div className="font-bold text-red-500">15 шт (60%)</div>
               </div>
               <div className="text-center">
                 <div>⭐ Плюс</div>
