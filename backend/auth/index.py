@@ -60,19 +60,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(database_url)
     cursor = conn.cursor()
     
-    cursor.execute('SELECT id, telegram_id, username, first_name, last_name, balance FROM users WHERE telegram_id = %s', (telegram_id,))
+    cursor.execute(f"SELECT id, telegram_id, username, first_name, last_name, balance FROM t_p79007879_telegram_casino_mini.users WHERE telegram_id = {telegram_id}")
     existing_user = cursor.fetchone()
     
     if existing_user:
         user_id = existing_user[0]
-        cursor.execute('UPDATE users SET last_login = %s WHERE id = %s', (datetime.now(), user_id))
+        cursor.execute(f"UPDATE t_p79007879_telegram_casino_mini.users SET last_login = CURRENT_TIMESTAMP WHERE id = {user_id}")
         conn.commit()
         
-        cursor.execute('SELECT item_name, item_value, rarity FROM user_inventory WHERE user_id = %s', (user_id,))
+        cursor.execute(f"SELECT item_name, item_value, rarity FROM t_p79007879_telegram_casino_mini.user_inventory WHERE user_id = {user_id}")
         inventory_rows = cursor.fetchall()
         inventory = [{'name': row[0], 'value': row[1], 'rarity': row[2]} for row in inventory_rows]
         
-        cursor.execute('SELECT last_free_open FROM free_case_cooldowns WHERE user_id = %s', (user_id,))
+        cursor.execute(f"SELECT last_free_open FROM t_p79007879_telegram_casino_mini.free_case_cooldowns WHERE user_id = {user_id}")
         cooldown_row = cursor.fetchone()
         last_free_open = cooldown_row[0].isoformat() if cooldown_row else None
         
@@ -98,9 +98,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     else:
+        username_escaped = username.replace("'", "''")
+        first_name_escaped = first_name.replace("'", "''")
+        last_name_escaped = last_name.replace("'", "''")
+        
         cursor.execute(
-            'INSERT INTO users (telegram_id, username, first_name, last_name) VALUES (%s, %s, %s, %s) RETURNING id, balance',
-            (telegram_id, username, first_name, last_name)
+            f"INSERT INTO t_p79007879_telegram_casino_mini.users (telegram_id, username, first_name, last_name) VALUES ({telegram_id}, '{username_escaped}', '{first_name_escaped}', '{last_name_escaped}') RETURNING id, balance"
         )
         new_user = cursor.fetchone()
         user_id = new_user[0]

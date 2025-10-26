@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import AuthModal from '@/components/AuthModal';
 import BoxesTab from '@/components/casino/BoxesTab';
 import MinerTab from '@/components/casino/MinerTab';
 import UpgradeTab from '@/components/casino/UpgradeTab';
@@ -39,68 +38,50 @@ const Index = () => {
   const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f';
 
   useEffect(() => {
-    // Get Telegram user ID if available
-    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-      const tg = (window as any).Telegram.WebApp;
-      if (tg.initDataUnsafe?.user?.id) {
-        setTelegramUserId(tg.initDataUnsafe.user.id);
-      }
-    }
-    
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      
-      // Migrate users without ID
-      if (!userData.id) {
-        const users = JSON.parse(localStorage.getItem('users') || '{}');
+    const initTelegramAuth = async () => {
+      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+        const tg = (window as any).Telegram.WebApp;
+        tg.ready();
+        tg.expand();
         
-        // Assign IDs to all users without one
-        let nextId = 1000;
-        Object.keys(users).forEach(email => {
-          if (!users[email].id) {
-            users[email].id = '#' + nextId;
-            nextId++;
+        if (tg.initDataUnsafe?.user) {
+          const telegramUser = tg.initDataUnsafe.user;
+          setTelegramUserId(telegramUser.id);
+          
+          try {
+            const response = await fetch('https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                telegram_id: telegramUser.id,
+                username: telegramUser.username || '',
+                first_name: telegramUser.first_name || '',
+                last_name: telegramUser.last_name || '',
+              }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.user) {
+              setUser(data.user);
+              setBalance(data.user.balance);
+              setInventory(data.inventory || []);
+              setLastFreeOpen(data.last_free_open ? new Date(data.last_free_open).getTime() : null);
+              setIsAuthenticated(true);
+            }
+          } catch (error) {
+            console.error('Auth error:', error);
           }
-        });
-        
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        // Update current user
-        if (users[userData.email]) {
-          userData.id = users[userData.email].id;
-          localStorage.setItem('currentUser', JSON.stringify(userData));
         }
       }
-      
-      setUser(userData);
-      setBalance(userData.balance || 1000);
-      setInventory(userData.inventory || []);
-      setLastFreeOpen(userData.lastFreeOpen || null);
-      setIsAuthenticated(true);
-    }
+    };
+    
+    initTelegramAuth();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const users = JSON.parse(localStorage.getItem('users') || '{}');
-      users[user.email] = {
-        ...users[user.email],
-        balance,
-        inventory,
-        lastFreeOpen,
-      };
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      const currentUser = {
-        ...user,
-        balance,
-        inventory,
-        lastFreeOpen,
-      };
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    }
-  }, [balance, inventory, lastFreeOpen, user]);
+
 
   useEffect(() => {
     if (!lastFreeOpen) return;
@@ -122,13 +103,7 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [lastFreeOpen]);
 
-  const handleAuthSuccess = (data: any) => {
-    setUser(data.user);
-    setBalance(data.user.balance || 1000);
-    setInventory(data.user.inventory || []);
-    setLastFreeOpen(data.user.lastFreeOpen || null);
-    setIsAuthenticated(true);
-  };
+
 
   const openBox = (box: BoxType) => {
     if (box.isFree) {
@@ -204,7 +179,9 @@ const Index = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('currentUser');
+    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+      (window as any).Telegram.WebApp.close();
+    }
     setIsAuthenticated(false);
     setUser(null);
     setBalance(1000);
@@ -226,7 +203,15 @@ const Index = () => {
   };
 
   if (!isAuthenticated) {
-    return <AuthModal isOpen={true} onAuthSuccess={handleAuthSuccess} />;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="text-6xl mb-4">🦆</div>
+          <h1 className="text-2xl font-bold gold-text-glow">DuckCasino</h1>
+          <p className="text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
