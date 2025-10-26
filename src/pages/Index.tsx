@@ -257,7 +257,7 @@ const Index = () => {
     
     setTimeout(() => {
       setInventory([...inventory, newItem]);
-    }, 4500);
+    }, 2500);
   };
 
   const performUpgrade = (multiplier: number) => {
