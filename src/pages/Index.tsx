@@ -33,6 +33,8 @@ const Index = () => {
   const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [telegramUserId, setTelegramUserId] = useState<number | null>(null);
+  const [isTelegramUser, setIsTelegramUser] = useState(false);
+  const BOT_USERNAME = 'DuckCasinoMiniBot'; // Замени на свой username бота
   const ADMIN_PASSWORD = 'admin2025';
   const CHANNEL_URL = 'https://t.me/tgDuckCasino';
   const CHECK_SUBSCRIPTION_URL = 'https://functions.poehali.dev/71badaea-20b7-4e06-b88d-f58b43731c3f';
@@ -47,6 +49,7 @@ const Index = () => {
         if (tg.initDataUnsafe?.user) {
           const telegramUser = tg.initDataUnsafe.user;
           setTelegramUserId(telegramUser.id);
+          setIsTelegramUser(true);
           
           try {
             const response = await fetch('https://functions.poehali.dev/48711fed-189d-4b70-b667-b7fbff222c1a', {
@@ -101,11 +104,13 @@ const Index = () => {
               setInventory(data.inventory || []);
               setLastFreeOpen(data.last_free_open ? new Date(data.last_free_open).getTime() : null);
               setIsAuthenticated(true);
+              setIsTelegramUser(false);
             }
           } catch (error) {
             console.error('Test user auth error:', error);
           }
         }
+      }
       }
     };
     
@@ -137,6 +142,11 @@ const Index = () => {
 
 
   const openBox = (box: BoxType) => {
+    if (!isTelegramUser) {
+      alert('❌ Эта функция доступна только в Telegram!');
+      return;
+    }
+    
     if (box.isFree) {
       const canOpen = !lastFreeOpen || (Date.now() - lastFreeOpen) >= 24 * 60 * 60 * 1000;
       if (!canOpen) {
@@ -181,6 +191,10 @@ const Index = () => {
   };
 
   const performUpgrade = (multiplier: number) => {
+    if (!isTelegramUser) {
+      alert('❌ Эта функция доступна только в Telegram!');
+      return;
+    }
     if (!upgradeFrom) return;
     
     const baseChance = 70;
@@ -240,6 +254,44 @@ const Index = () => {
           <div className="text-6xl mb-4">🦆</div>
           <h1 className="text-2xl font-bold gold-text-glow">DuckCasino</h1>
           <p className="text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Если пользователь не из Telegram - показываем предупреждение
+  if (!isTelegramUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-6">
+          <div className="text-center space-y-4">
+            <div className="text-6xl mb-4">🦆</div>
+            <h1 className="text-2xl font-bold gold-text-glow">DuckCasino</h1>
+            <div className="bg-card border border-primary/30 rounded-lg p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <Icon name="AlertCircle" className="text-yellow-500 mt-1" size={24} />
+                <div className="text-left space-y-2">
+                  <p className="font-semibold text-lg">Требуется Telegram</p>
+                  <p className="text-sm text-muted-foreground">
+                    Для игры в DuckCasino нужно открыть приложение через Telegram бота.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Только пользователи Telegram могут открывать кейсы, играть в майнер и апгрейды!
+                  </p>
+                </div>
+              </div>
+              <Button 
+                className="w-full bg-[#0088cc] hover:bg-[#0077b3] text-white font-bold"
+                onClick={() => window.open(`https://t.me/${BOT_USERNAME}`, '_blank')}
+              >
+                <Icon name="Send" className="mr-2" size={20} />
+                Открыть в Telegram
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Демо-режим недоступен. Весь функционал работает только в Telegram.
+            </p>
+          </div>
         </div>
       </div>
     );
